@@ -30,11 +30,18 @@ public class FileStorageUtil {
     }
 
     public static void supprimerFichier(String nomFichier, String repertoireBase) throws IOException {
-        if (nomFichier != null) {
+        if (nomFichier != null && !nomFichier.trim().isEmpty()) {
             Path cheminFichier = Paths.get(repertoireBase, nomFichier);
             if (Files.exists(cheminFichier)) {
                 Files.delete(cheminFichier);
             }
+        }
+    }
+
+    // NOUVELLE MÉTHODE : Suppression avec chemin complet
+    public static void supprimerFichier(Path cheminComplet) throws IOException {
+        if (cheminComplet != null && Files.exists(cheminComplet)) {
+            Files.delete(cheminComplet);
         }
     }
 

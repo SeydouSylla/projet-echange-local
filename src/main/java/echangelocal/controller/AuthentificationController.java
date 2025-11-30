@@ -33,7 +33,7 @@ public class AuthentificationController {
     @GetMapping("/inscription")
     public String afficherFormulaireInscription(Model model) {
         model.addAttribute("inscriptionDto", new InscriptionDto());
-        return "inscription";
+        return "authentification/inscription";
     }
 
     @PostMapping("/inscription")
@@ -43,7 +43,7 @@ public class AuthentificationController {
                                      RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            return "inscription";
+            return "authentification/inscription";
         }
 
         try {
@@ -52,7 +52,7 @@ public class AuthentificationController {
             return "redirect:/connexion";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return "inscription";
+            return "authentification/inscription";
         }
     }
 
@@ -70,7 +70,7 @@ public class AuthentificationController {
             model.addAttribute("success", "Vous avez été déconnecté avec succès.");
         }
 
-        return "connexion";
+        return "authentification/connexion";
     }
 
     @GetMapping("/deconnexion")
@@ -101,7 +101,7 @@ public class AuthentificationController {
 
         model.addAttribute("profilDto", profilDto);
 
-        return "profil";
+        return "authentification/profil";
     }
 
     @PostMapping("/profil")
@@ -116,7 +116,7 @@ public class AuthentificationController {
         }
 
         if (result.hasErrors()) {
-            return "profil";
+            return "authentification/profil";
         }
 
         try {
