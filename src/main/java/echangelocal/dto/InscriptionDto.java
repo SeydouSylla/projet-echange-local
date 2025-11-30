@@ -24,7 +24,8 @@ public class InscriptionDto {
     private String localisation;
 
     // Constructeurs
-    public InscriptionDto() {}
+    public InscriptionDto() {
+    }
 
     public InscriptionDto(String email, String motDePasse, String prenom, String nom, String localisation) {
         this.email = email;

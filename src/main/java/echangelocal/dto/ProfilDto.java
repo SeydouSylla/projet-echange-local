@@ -9,7 +9,8 @@ public class ProfilDto {
     private String telephone;
 
     // Constructeurs
-    public ProfilDto() {}
+    public ProfilDto() {
+    }
 
     // Getters et Setters
     public String getPrenom() {

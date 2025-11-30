@@ -12,7 +12,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UtilisateurExistantException.class)
     public String handleUtilisateurExistantException(UtilisateurExistantException e, Model model) {
         model.addAttribute("error", e.getMessage());
-        return "inscription";
+        return "authentification/inscription";
     }
 
     @ExceptionHandler(UtilisateurNonTrouveException.class)
@@ -27,9 +27,21 @@ public class GlobalExceptionHandler {
         return "redirect:/profil";
     }
 
+    @ExceptionHandler(AnnonceNonTrouveeException.class)
+    public String handleAnnonceNonTrouveeException(AnnonceNonTrouveeException e, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/annonces/liste";
+    }
+
+    @ExceptionHandler(OperationNonAutoriseeException.class)
+    public String handleOperationNonAutoriseeException(OperationNonAutoriseeException e, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/annonces/liste";
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public String handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", "La taille du fichier dépasse la limite autorisée.");
-        return "redirect:/profil";
+        return "redirect:/annonces/creer";
     }
 }

@@ -1,0 +1,531 @@
+/* Variables CSS pour les annonces */
+:root {
+    --annonce-primary: #3498db;
+    --annonce-primary-dark: #2980b9;
+    --annonce-secondary: #2ecc71;
+    --annonce-secondary-dark: #27ae60;
+    --annonce-warning: #f39c12;
+    --annonce-danger: #e74c3c;
+    --annonce-light: #f8f9fa;
+    --annonce-dark: #343a40;
+    --annonce-border: #dee2e6;
+    --annonce-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --annonce-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Styles pour les cartes d'annonces */
+.annonce-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--annonce-shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.annonce-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--annonce-shadow-hover);
+}
+
+.annonce-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.annonce-card:hover .annonce-image {
+    transform: scale(1.05);
+}
+
+.annonce-image-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, var(--annonce-light), #e9ecef);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.annonce-image-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--annonce-primary), var(--annonce-primary-dark)) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, var(--annonce-secondary), var(--annonce-secondary-dark)) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, var(--annonce-warning), #e67e22) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, var(--annonce-danger), #c0392b) !important;
+}
+
+/* Informations du créateur */
+.createur-info {
+    display: flex;
+    align-items: center;
+}
+
+.createur-info img {
+    border: 2px solid var(--annonce-border);
+}
+
+/* Pagination */
+.pagination .page-item.active .page-link {
+    background-color: var(--annonce-primary);
+    border-color: var(--annonce-primary);
+}
+
+.pagination .page-link {
+    color: var(--annonce-primary);
+    border: 1px solid var(--annonce-border);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--annonce-light);
+    border-color: var(--annonce-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .annonce-card {
+        margin-bottom: 1rem;
+    }
+
+    .annonce-image {
+        height: 150px;
+    }
+}
+
+/* Animation de chargement */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.annonce-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Styles pour le formulaire de création et modification */
+.form-image-preview {
+    border: 2px dashed var(--annonce-border);
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    background: var(--annonce-light);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.form-image-preview:hover {
+    border-color: var(--annonce-primary);
+    background: #f8f9fa;
+}
+
+.form-image-preview.dragover {
+    border-color: var(--annonce-primary);
+    background: var(--annonce-primary);
+    color: white;
+}
+
+.form-image-preview.dragover i,
+.form-image-preview.dragover p {
+    color: white !important;
+}
+
+.image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.image-preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--annonce-shadow);
+    transition: transform 0.2s ease;
+}
+
+.image-preview-item:hover {
+    transform: scale(1.05);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+
+.image-preview-remove:hover {
+    background: rgba(192, 57, 43, 1);
+}
+
+/* Styles pour les détails d'annonce */
+.annonce-gallery {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.annonce-gallery img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.annonce-thumbnails {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--annonce-light);
+    border-radius: 0 0 12px 12px;
+    overflow-x: auto;
+}
+
+.annonce-thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.annonce-thumbnail:hover,
+.annonce-thumbnail.active {
+    border-color: var(--annonce-primary);
+    transform: scale(1.05);
+}
+
+.annonce-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Statistiques des annonces */
+.stats-card {
+    background: linear-gradient(135deg, var(--annonce-primary), var(--annonce-primary-dark));
+    color: white;
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    line-height: 1;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Breadcrumb personnalisé */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item a {
+    color: var(--annonce-primary);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+/* Styles pour les formulaires */
+.form-check-input:checked {
+    background-color: var(--annonce-primary);
+    border-color: var(--annonce-primary);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--annonce-primary);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Styles pour les boutons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--annonce-primary), var(--annonce-primary-dark));
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--annonce-primary-dark), #21618c);
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--annonce-warning), #e67e22);
+    border: none;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--annonce-danger), #c0392b);
+    border: none;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-1px);
+}
+
+/* Styles pour les cartes de statut */
+.card-header.bg-primary {
+    background: linear-gradient(135deg, var(--annonce-primary), var(--annonce-primary-dark)) !important;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(135deg, var(--annonce-secondary), var(--annonce-secondary-dark)) !important;
+}
+
+.card-header.bg-warning {
+    background: linear-gradient(135deg, var(--annonce-warning), #e67e22) !important;
+}
+
+.card-header.bg-danger {
+    background: linear-gradient(135deg, var(--annonce-danger), #c0392b) !important;
+}
+
+.card-header.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+}
+
+/* Styles pour les listes */
+.list-unstyled li {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--annonce-border);
+}
+
+.list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+/* Animation pour les alertes */
+.alert {
+    animation: slideInDown 0.5s ease-out;
+    border: none;
+    border-radius: 8px;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Styles pour les dropdowns */
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--annonce-shadow-hover);
+    padding: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--annonce-primary);
+    color: white;
+}
+
+/* Styles pour les modals */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--annonce-shadow-hover);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--annonce-border);
+    background: var(--annonce-light);
+    border-radius: 12px 12px 0 0;
+}
+
+/* Styles pour les onglets (si utilisés plus tard) */
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--annonce-dark);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    background: transparent;
+    color: var(--annonce-primary);
+    border-bottom: 2px solid var(--annonce-primary);
+}
+
+/* Styles pour les tooltips */
+.tooltip-inner {
+    background-color: var(--annonce-dark);
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--annonce-dark);
+}
+
+/* Styles pour les états de chargement */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--annonce-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Styles pour les messages vides */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Styles pour les responsive tables */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table th {
+    background: var(--annonce-light);
+    border-bottom: 2px solid var(--annonce-primary);
+    font-weight: 600;
+    color: var(--annonce-dark);
+}
+
+/* Styles pour les badges de statut */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: var(--annonce-secondary);
+    color: white;
+}
+
+.status-inactive {
+    background: var(--annonce-warning);
+    color: white;
+}
+
+.status-pending {
+    background: var(--annonce-primary);
+    color: white;
+}
+
+/* Styles pour les progress bars */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--annonce-light);
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, var(--annonce-primary), var(--annonce-secondary));
+    border-radius: 4px;
+}
+
+/* Styles pour les badges de nombre */
+.count-badge {
+    background: var(--annonce-danger);
+    color: white;
+    border-radius: 10px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
