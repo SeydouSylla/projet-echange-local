@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/authentification.css}" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/accueil">Accueil</a>
+                </li>
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profil">
+                            <i class="fas fa-user me-1"></i>Mon Profil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/deconnexion">
+                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+                        </a>
+                    </li>
+                </th:block>
+                <th:block th:unless="${session.utilisateur != null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/connexion">
+                            <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inscription">
+                            <i class="fas fa-user-plus me-1"></i>Inscription
+                        </a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenu principal -->
+<div class="container mt-5">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-light p-5 rounded text-center">
+        <h1 class="display-4 mb-4 text-primary">Bienvenue sur Échange Local</h1>
+
+        <!-- Message personnalisé selon connexion -->
+        <div th:if="${session.utilisateur != null}" class="alert alert-success">
+            <h4 class="alert-heading">
+                <i class="fas fa-check-circle me-2"></i>Connexion réussie !
+            </h4>
+            <p class="mb-0">Bonjour <strong th:text="${session.utilisateur.prenom}"></strong>, vous êtes maintenant connecté à votre compte.</p>
+        </div>
+
+        <div th:unless="${session.utilisateur != null}">
+            <p class="lead mb-4 text-muted">Partagez, échangez et créez des liens avec vos voisins.</p>
+        </div>
+
+        <hr class="my-4">
+
+        <p class="mb-4">Cette application vous permet d'échanger des objets et des compétences avec votre communauté locale.</p>
+
+        <!-- Actions principales -->
+        <div th:if="${session.utilisateur != null}" class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a class="btn btn-primary btn-lg me-md-3" href="/profil" role="button">
+                <i class="fas fa-user me-2"></i>Gérer mon profil
+            </a>
+            <a class="btn btn-outline-primary btn-lg" href="#" role="button" style="pointer-events: none; opacity: 0.6;">
+                <i class="fas fa-search me-2"></i>Explorer les annonces
+            </a>
+        </div>
+
+        <div th:unless="${session.utilisateur != null}" class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a class="btn btn-primary btn-lg me-md-3" href="/inscription" role="button">
+                <i class="fas fa-user-plus me-2"></i>Créer un compte
+            </a>
+            <a class="btn btn-outline-primary btn-lg" href="/connexion" role="button">
+                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+            </a>
+        </div>
+    </div>
+
+    <!-- Fonctionnalités disponibles -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Fonctionnalités disponibles</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Fonctionnalité 1 : Authentification -->
+        <div class="col-md-12 mb-4">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Authentification
+                    </h5>
+                    <span class="badge bg-light text-success">COMPLÈTE</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Inscription et Connexion Sécurisées</h5>
+                    <p class="card-text">Système complet d'authentification avec gestion de profil avancée.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Inscription avec validation des données</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Connexion sécurisée avec Spring Security</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Gestion complète du profil utilisateur</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Upload et gestion des photos de profil</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Vérification du numéro de téléphone</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Mot de passe crypté (BCrypt)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prochaines étapes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-road me-2"></i>Prochaines étapes de développement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="text-secondary mb-2">Étape 2</div>
+                                <h6>Annonces Objets</h6>
+                                <small class="text-muted">Publication et recherche d'objets</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="text-secondary mb-2">Étape 3</div>
+                                <h6>Compétences</h6>
+                                <small class="text-muted">Partage de services et compétences</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="text-secondary mb-2">Étape 4</div>
+                                <h6>Transactions</h6>
+                                <small class="text-muted">Échanges et messagerie intégrée</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="text-secondary mb-2">Étape 5</div>
+                                <h6>Réputation</h6>
+                                <small class="text-muted">Système d'avis et notations</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
