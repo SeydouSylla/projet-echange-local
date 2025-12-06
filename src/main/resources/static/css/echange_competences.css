@@ -1,0 +1,240 @@
+/* Variables CSS pour les compétences */
+:root {
+    --competence-primary: #9b59b6;
+    --competence-primary-dark: #8e44ad;
+    --competence-secondary: #2ecc71;
+    --competence-warning: #f39c12;
+    --competence-danger: #e74c3c;
+    --competence-light: #f8f9fa;
+    --competence-dark: #343a40;
+    --competence-border: #dee2e6;
+    --competence-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --competence-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Styles pour les cartes de compétences */
+.competence-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--competence-shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.competence-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--competence-shadow-hover);
+}
+
+/* Badges spécifiques aux compétences */
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark)) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, var(--competence-secondary), #27ae60) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, var(--competence-warning), #e67e22) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, var(--competence-danger), #c0392b) !important;
+}
+
+/* Styles pour les disponibilités */
+.availability-badge {
+    background-color: var(--competence-light);
+    color: var(--competence-dark);
+    border: 1px solid var(--competence-border);
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Animation de chargement */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.competence-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Styles pour les formulaires */
+.form-check-input:checked {
+    background-color: var(--competence-primary);
+    border-color: var(--competence-primary);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--competence-primary);
+    box-shadow: 0 0 0 0.2rem rgba(155, 89, 182, 0.25);
+}
+
+/* Styles pour les boutons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark));
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--competence-primary-dark), #7d3c98);
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .competence-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Styles pour les en-têtes de carte */
+.card-header.bg-primary {
+    background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark)) !important;
+}
+
+/* Styles pour les statistiques */
+.stats-card {
+    background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark));
+    color: white;
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    line-height: 1;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Styles pour les états vides */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    color: var(--competence-primary);
+}
+
+/* Styles pour la navigation active */
+.navbar-nav .nav-link.active {
+    color: var(--competence-primary) !important;
+    font-weight: 600;
+}
+
+/* Styles pour les dropdowns */
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--competence-shadow-hover);
+}
+
+.dropdown-item:hover {
+    background-color: var(--competence-primary);
+    color: white;
+}
+
+/* Styles pour les paginations */
+.pagination .page-item.active .page-link {
+    background-color: var(--competence-primary);
+    border-color: var(--competence-primary);
+}
+
+.pagination .page-link {
+    color: var(--competence-primary);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--competence-light);
+    border-color: var(--competence-primary);
+}
+
+/* Styles spécifiques pour les icônes de compétences */
+.competence-icon {
+    color: var(--competence-primary);
+    font-size: 1.2rem;
+}
+
+/* Styles pour les badges de localisation */
+.location-badge {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+/* Styles pour les cartes de créateur */
+.creator-card {
+    border-left: 4px solid var(--competence-primary);
+}
+
+/* Animation pour les hover */
+.hover-lift {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+/* Styles pour les tags de compétences */
+.skill-tag {
+    background-color: rgba(155, 89, 182, 0.1);
+    color: var(--competence-primary);
+    border: 1px solid rgba(155, 89, 182, 0.2);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0.1rem;
+}
+
+/* Styles pour les indicateurs de statut */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-available {
+    background-color: var(--competence-secondary);
+}
+
+.status-unavailable {
+    background-color: var(--competence-warning);
+}
+
+/* Styles pour les cartes de détail */
+.detail-card {
+    border-radius: 12px;
+    border: 1px solid var(--competence-border);
+    transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+    border-color: var(--competence-primary);
+    box-shadow: var(--competence-shadow);
+}

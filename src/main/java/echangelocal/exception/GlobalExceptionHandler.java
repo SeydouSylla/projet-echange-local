@@ -44,4 +44,11 @@ public class GlobalExceptionHandler {
         redirectAttributes.addFlashAttribute("error", "La taille du fichier dépasse la limite autorisée.");
         return "redirect:/annonces/creer";
     }
+
+    //Pour les competences
+    @ExceptionHandler(CompetenceNonTrouveeException.class)
+    public String handleCompetenceNonTrouveeException(CompetenceNonTrouveeException e, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/competences/liste";
+    }
 }

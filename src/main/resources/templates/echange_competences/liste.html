@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compétences - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/echange_competences.css}" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/accueil">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/annonces/liste">Objets</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/competences/liste">Compétences</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            <span th:text="${session.utilisateur.prenom}"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/annonces/mes-annonces">Mes annonces objets</a></li>
+                            <li><a class="dropdown-item" href="/competences/mes-competences">Mes compétences</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/profil">Mon profil</a></li>
+                            <li><a class="dropdown-item" href="/deconnexion">Déconnexion</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/annonces/creer">
+                            <i class="fas fa-plus me-1"></i>Proposer un objet
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/competences/creer">
+                            <i class="fas fa-plus me-1"></i>Proposer une compétence
+                        </a>
+                    </li>
+                </th:block>
+                <th:block th:unless="${session.utilisateur != null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/connexion">
+                            <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inscription">
+                            <i class="fas fa-user-plus me-1"></i>Inscription
+                        </a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- En-tête avec recherche -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-hands-helping me-2"></i>Compétences disponibles</h1>
+                <th:block th:if="${session.utilisateur != null}">
+                    <a href="/competences/creer" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Proposer une compétence
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de recherche avancée -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/competences/liste}" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="recherche"
+                                   th:value="${recherche}" placeholder="Rechercher une compétence...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" name="categorie">
+                                <option value="">Toutes les catégories</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat}"
+                                        th:text="${cat}"
+                                        th:selected="${categorie == cat}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="localisation"
+                                   th:value="${localisation}" placeholder="Localisation...">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>Rechercher
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des compétences -->
+    <div class="row" th:if="${competencesPage.content.size() > 0}">
+        <div th:each="competence : ${competencesPage.content}" class="col-lg-4 col-md-6 mb-4">
+            <div class="card competence-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary" th:text="${competence.categorie}"></span>
+                        <th:block th:if="${competence.createurTelephoneVerifie}">
+                            <span class="badge bg-success" title="Utilisateur vérifié">
+                                <i class="fas fa-check-circle me-1"></i>Vérifié
+                            </span>
+                        </th:block>
+                    </div>
+
+                    <h5 class="card-title" th:text="${competence.titre}"></h5>
+                    <p class="card-text flex-grow-1" th:text="${#strings.abbreviate(competence.description, 100)}"></p>
+
+                    <!-- Disponibilités -->
+                    <div class="mb-2">
+                        <small class="text-muted">Disponibilités :</small>
+                        <div>
+                            <th:block th:each="dispo : ${competence.disponibilites}">
+                                <span class="badge bg-light text-dark me-1" th:text="${dispo}"></span>
+                            </th:block>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                <span th:text="${#temporals.format(competence.dateCreation, 'dd/MM/yyyy')}"></span>
+                            </small>
+                            <th:block th:if="${competence.disponible}">
+                                <span class="badge bg-success">Disponible</span>
+                            </th:block>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="createur-info">
+                                <th:block th:if="${competence.createurPhotoProfil}">
+                                    <img th:src="@{'/uploads/profils/' + ${competence.createurPhotoProfil}}"
+                                         class="rounded-circle me-2"
+                                         width="24" height="24"
+                                         alt="Photo de profil">
+                                </th:block>
+                                <th:block th:unless="${competence.createurPhotoProfil}">
+                                    <i class="fas fa-user-circle me-2"></i>
+                                </th:block>
+                                <small th:text="${competence.createurNom}"></small>
+                            </div>
+                            <small class="text-muted" th:text="${competence.createurLocalisation}"></small>
+                        </div>
+
+                        <a th:href="@{/competences/{id}(id=${competence.id})}"
+                           class="btn btn-outline-primary btn-sm w-100 mt-2">
+                            Voir les détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message si aucune compétence -->
+    <div th:if="${competencesPage.content.size() == 0}" class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-hands-helping fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">Aucune compétence trouvée</h3>
+                <p class="text-muted">Aucune compétence ne correspond à votre recherche.</p>
+                <th:block th:if="${session.utilisateur != null}">
+                    <a href="/competences/creer" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Proposer la première compétence
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${competencesPage.totalPages > 1}" class="row">
+        <div class="col-12">
+            <nav aria-label="Pagination des compétences">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/competences/liste(page=0, size=${competencesPage.size}, recherche=${recherche}, categorie=${categorie}, localisation=${localisation})}">
+                            Première
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/competences/liste(page=${currentPage - 1}, size=${competencesPage.size}, recherche=${recherche}, categorie=${categorie}, localisation=${localisation})}">
+                            Précédent
+                        </a>
+                    </li>
+
+                    <li th:each="page : ${#numbers.sequence(0, competencesPage.totalPages - 1)}"
+                        class="page-item"
+                        th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/competences/liste(page=${page}, size=${competencesPage.size}, recherche=${recherche}, categorie=${categorie}, localisation=${localisation})}"
+                           th:text="${page + 1}">
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == competencesPage.totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/competences/liste(page=${currentPage + 1}, size=${competencesPage.size}, recherche=${recherche}, categorie=${categorie}, localisation=${localisation})}">
+                            Suivant
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == competencesPage.totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/competences/liste(page=${competencesPage.totalPages - 1}, size=${competencesPage.size}, recherche=${recherche}, categorie=${categorie}, localisation=${localisation})}">
+                            Dernière
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
