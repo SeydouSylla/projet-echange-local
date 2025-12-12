@@ -10,57 +10,50 @@
 </head>
 <body>
 <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="/accueil">
-            <i class="fas fa-exchange-alt me-2"></i>Échange Local
+            <i class="fas fa-exchange-alt me-2 pulse"></i>Échange Local
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/accueil">Accueil</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/annonces/liste">Annonces</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item"><a class="nav-link" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+                </th:block>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <th:block th:if="${session.utilisateur != null}">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/annonces/mes-annonces">
-                            <i class="fas fa-list me-1"></i>Mes Annonces
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
+                            <span th:text="${session.utilisateur.prenom}"></span>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/annonces/creer">
-                            <i class="fas fa-plus me-1"></i>Créer une annonce
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/profil">
-                            <i class="fas fa-user me-1"></i>Mon Profil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/deconnexion">
-                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
-                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
+                            <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
                     </li>
                 </th:block>
                 <th:block th:unless="${session.utilisateur != null}">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/connexion">
-                            <i class="fas fa-sign-in-alt me-1"></i>Connexion
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/inscription">
-                            <i class="fas fa-user-plus me-1"></i>Inscription
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/connexion"><i class="fas fa-sign-in-alt me-1"></i>Connexion</a></li>
+                    <li class="nav-item"><a class="btn btn-outline-light ms-2" href="/inscription"><i class="fas fa-user-plus me-1"></i>S'inscrire</a></li>
                 </th:block>
             </ul>
         </div>

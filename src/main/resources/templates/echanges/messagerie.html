@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/echanges.css}" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 500px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 70%;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+            background-color: #000000 !important;
+            color: #ffffff;
+            border: 1px solid #333;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+        }
+
+        .message-received {
+            align-self: flex-start;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .message-timestamp {
+            font-size: 0.7rem;
+            text-align: right;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
+        .message-sent .message-timestamp {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .message-received .message-timestamp {
+            color: #6c757d;
+        }
+
+        .echange-info-card {
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2 pulse"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <li class="nav-item"><a class="nav-link" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
+                            <span th:text="${session.utilisateur.prenom}"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
+                            <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Messages de succès/erreur -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row">
+        <!-- Informations sur l'échange -->
+        <div class="col-md-4 mb-4">
+            <div class="card echange-info-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Détails de l'échange</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3">
+                        <th:block th:if="${demande.annonce != null}">
+                            <i class="fas fa-box me-2"></i>
+                            <a th:href="@{/annonces/{id}(id=${demande.annonce.id})}"
+                               th:text="${demande.annonce.titre}"></a>
+                        </th:block>
+                        <th:block th:if="${demande.competence != null}">
+                            <i class="fas fa-hands-helping me-2"></i>
+                            <a th:href="@{/competences/{id}(id=${demande.competence.id})}"
+                               th:text="${demande.competence.titre}"></a>
+                        </th:block>
+                    </h6>
+
+                    <div class="mb-3">
+                        <strong>Participants :</strong><br>
+                        <div class="d-flex align-items-center mt-2">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            <span th:text="${demande.demandeur.prenom + ' ' + demande.demandeur.nom}"></span>
+                            <span class="badge bg-info ms-2" th:if="${utilisateur.id == demande.demandeur.id}">Vous</span>
+                        </div>
+                        <div class="d-flex align-items-center mt-1">
+                            <i class="fas fa-user me-2 text-success"></i>
+                            <span th:text="${demande.destinataire.prenom + ' ' + demande.destinataire.nom}"></span>
+                            <span class="badge bg-info ms-2" th:if="${utilisateur.id == demande.destinataire.id}">Vous</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Proposition d'échange :</strong>
+                        <p class="small mb-0" th:text="${demande.propositionEchange}"></p>
+                    </div>
+
+                    <div>
+                        <strong>Date proposée :</strong>
+                        <p class="mb-0" th:text="${#temporals.format(demande.dateProposee, 'dd/MM/yyyy à HH:mm')}"></p>
+                    </div>
+
+                    <hr>
+                    <div class="d-grid">
+                        <a th:href="@{/echanges/mes-demandes}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>Retour aux échanges
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messagerie -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Messagerie</h5>
+                    <span class="badge bg-light text-primary">
+                        <i class="fas fa-exchange-alt me-1"></i>
+                        <span th:text="${demande.statut.name() == 'ACCEPTEE' ? 'Échange actif' : demande.statut}"></span>
+                    </span>
+                </div>
+
+                <!-- Zone de chat -->
+                <div class="chat-container" id="chatContainer">
+                    <th:block th:if="${demande.messages != null && !demande.messages.isEmpty()}">
+                        <th:block th:each="message : ${demande.messages}">
+                            <div th:classappend="${message.expediteur.id == utilisateur.id} ?
+                                                 'message message-sent' : 'message message-received'">
+                                <div class="message-header">
+                                    <th:block th:if="${message.expediteur.id == utilisateur.id}">
+                                        <strong>Vous</strong>
+                                    </th:block>
+                                    <th:block th:unless="${message.expediteur.id == utilisateur.id}">
+                                        <strong th:text="${message.expediteur.prenom}"></strong>
+                                    </th:block>
+                                </div>
+                                <div class="message-content">
+                                    <span th:text="${message.contenu}"></span>
+                                </div>
+                                <div class="message-timestamp">
+                                    <i class="far fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(message.dateEnvoi, 'dd/MM HH:mm')}"></span>
+                                </div>
+                            </div>
+                        </th:block>
+                    </th:block>
+                    <th:block th:unless="${demande.messages != null && !demande.messages.isEmpty()}">
+                        <div class="text-center my-auto">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun message pour le moment.<br>Soyez le premier à démarrer la conversation !</p>
+                        </div>
+                    </th:block>
+                </div>
+
+                <!-- Formulaire d'envoi de message -->
+                <div class="card-footer">
+                    <form th:action="@{/echanges/envoyer-message}" method="post" th:object="${messageDto}">
+                        <input type="hidden" th:field="*{demandeEchangeId}" th:value="${demande.id}">
+
+                        <div class="input-group">
+                            <textarea class="form-control"
+                                      placeholder="Tapez votre message ici..."
+                                      rows="2"
+                                      th:field="*{contenu}"
+                                      required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('contenu')}">
+                            <small th:errors="*{contenu}"></small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Conseils pour l'échange -->
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Conseils pour un bon échange</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li><i class="fas fa-check text-success me-2"></i>Convenez d'un lieu et d'une heure précis</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Vérifiez l'état de l'objet avant l'échange</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Soyez ponctuel et respectueux</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Confirmez l'échange une fois terminé</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Faire défiler vers le bas du chat
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Auto-refresh des messages toutes les 30 secondes
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+
+        // Focus sur le textarea
+        const textarea = document.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+        }
+    });
+</script>
+</body>
+</html>
