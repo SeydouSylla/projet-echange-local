@@ -6,334 +6,214 @@
     <title>Accueil - Échange Local</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/authentification.css}" rel="stylesheet">
-    <link th:href="@{/css/annonces.css}" rel="stylesheet">
-    <link th:href="@{/css/echange_competences.css}" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --gray-light: #f8f9fa;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-color); color: #333; line-height: 1.6; }
+        .navbar { background: linear-gradient(135deg, var(--dark-color), #1a252f); box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 0.8rem 0; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; color: white !important; }
+        .navbar-brand i { color: var(--secondary-color); animation: pulse 2s infinite; }
+        .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 500; padding: 0.5rem 1rem !important; border-radius: 4px; transition: all 0.3s ease; margin: 0 2px; }
+        .nav-link:hover, .nav-link.active { background-color: rgba(255,255,255,0.1); color: white !important; transform: translateY(-2px); }
+        .dropdown-menu { border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 8px; padding: 0.5rem; }
+        .dropdown-item { padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.2s ease; }
+        .dropdown-item:hover { background-color: var(--primary-color); color: white; }
+        .hero-section { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 4rem 0; margin-bottom: 3rem; border-radius: 0 0 30px 30px; }
+        .hero-title { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
+        .hero-subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; }
+        .feature-card { background: white; border-radius: 12px; padding: 2rem; height: 100%; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e1e8ed; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .feature-card i { font-size: 2.5rem; margin-bottom: 1rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: none; padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+        .btn-success { background: linear-gradient(135deg, var(--secondary-color), #27ae60); border: none; padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .pulse { animation: pulse 2s infinite; }
+        .section-title { color: var(--dark-color); font-weight: 700; margin-bottom: 2rem; position: relative; padding-bottom: 0.5rem; }
+        .section-title:after { content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: var(--primary-color); border-radius: 2px; }
+        .footer { background: var(--dark-color); color: white; padding: 3rem 0; margin-top: 4rem; }
+        .footer-links a { color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 1rem; transition: color 0.3s ease; }
+        .footer-links a:hover { color: white; }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .navbar-nav { background: rgba(44, 62, 80, 0.95); padding: 1rem; border-radius: 8px; margin-top: 1rem; } }
+    </style>
 </head>
 <body>
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="/accueil">
             <i class="fas fa-exchange-alt me-2"></i>Échange Local
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/accueil">Accueil</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/annonces/liste">Objets</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/competences/liste">Compétences</a>
-                </li>
+                <li class="nav-item"><a class="nav-link active" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item"><a class="nav-link" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+                </th:block>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <th:block th:if="${session.utilisateur != null}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
                             <span th:text="${session.utilisateur.prenom}"></span>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/annonces/mes-annonces">Mes annonces objets</a></li>
-                            <li><a class="dropdown-item" href="/competences/mes-competences">Mes compétences</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/profil">Mon profil</a></li>
-                            <li><a class="dropdown-item" href="/deconnexion">Déconnexion</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/annonces/creer">
-                            <i class="fas fa-plus me-1"></i>Proposer un objet
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/competences/creer">
-                            <i class="fas fa-plus me-1"></i>Proposer une compétence
-                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
+                            <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
                     </li>
                 </th:block>
                 <th:block th:unless="${session.utilisateur != null}">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/connexion">
-                            <i class="fas fa-sign-in-alt me-1"></i>Connexion
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/inscription">
-                            <i class="fas fa-user-plus me-1"></i>Inscription
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/connexion"><i class="fas fa-sign-in-alt me-1"></i>Connexion</a></li>
+                    <li class="nav-item"><a class="btn btn-outline-light ms-2" href="/inscription"><i class="fas fa-user-plus me-1"></i>S'inscrire</a></li>
                 </th:block>
             </ul>
         </div>
     </div>
 </nav>
 
-<!-- Contenu principal -->
-<div class="container mt-5">
-    <!-- Hero Section -->
-    <div class="jumbotron bg-light p-5 rounded text-center mb-5">
-        <h1 class="display-4 mb-4 text-primary">Bienvenue sur Échange Local</h1>
-
-        <!-- Message personnalisé selon connexion -->
-        <div th:if="${session.utilisateur != null}" class="alert alert-success">
-            <h4 class="alert-heading">
-                <i class="fas fa-check-circle me-2"></i>Connexion réussie !
-            </h4>
-            <p class="mb-0">Bonjour <strong th:text="${session.utilisateur.prenom}"></strong>, vous êtes maintenant connecté à votre compte.</p>
-        </div>
-
-        <div th:unless="${session.utilisateur != null}">
-            <p class="lead mb-4 text-muted">Partagez, échangez et créez des liens avec vos voisins.</p>
-        </div>
-
-        <hr class="my-4">
-
-        <p class="mb-4">Cette application vous permet d'échanger des objets et des compétences avec votre communauté locale.</p>
-
-        <!-- Actions principales -->
-        <div th:if="${session.utilisateur != null}" class="d-grid gap-2 d-md-flex justify-content-md-center">
-            <a class="btn btn-primary btn-lg me-md-3" href="/annonces/creer" role="button">
-                <i class="fas fa-box me-2"></i>Proposer un objet
-            </a>
-            <a class="btn btn-competence btn-lg" href="/competences/creer" role="button">
-                <i class="fas fa-hands-helping me-2"></i>Proposer une compétence
-            </a>
-        </div>
-
-        <div th:unless="${session.utilisateur != null}" class="d-grid gap-2 d-md-flex justify-content-md-center">
-            <a class="btn btn-primary btn-lg me-md-3" href="/inscription" role="button">
-                <i class="fas fa-user-plus me-2"></i>Créer un compte
-            </a>
-            <a class="btn btn-outline-primary btn-lg" href="/connexion" role="button">
-                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
-            </a>
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">Partagez plus, consommez moins</h1>
+                <p class="hero-subtitle">Rejoignez une communauté solidaire où voisins échangent objets et compétences pour une consommation plus responsable et des liens plus forts.</p>
+                <th:block th:if="${session.utilisateur != null}">
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/annonces/creer" class="btn btn-light btn-lg"><i class="fas fa-plus me-2"></i>Proposer un objet</a>
+                        <a href="/competences/creer" class="btn btn-outline-light btn-lg"><i class="fas fa-hands-helping me-2"></i>Partager une compétence</a>
+                    </div>
+                </th:block>
+                <th:block th:unless="${session.utilisateur != null}">
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/inscription" class="btn btn-light btn-lg"><i class="fas fa-user-plus me-2"></i>Rejoindre la communauté</a>
+                        <a href="/annonces/liste" class="btn btn-outline-light btn-lg"><i class="fas fa-search me-2"></i>Découvrir les échanges</a>
+                    </div>
+                </th:block>
+            </div>
+            <div class="col-lg-6 text-center"><i class="fas fa-users fa-10x opacity-25"></i></div>
         </div>
     </div>
+</div>
 
-    <!-- Sections de découverte -->
+<div class="container">
+    <!-- Fonctionnalités -->
     <div class="row mb-5">
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 hover-lift">
-                <div class="card-body text-center p-4">
-                    <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
-                    <h3 class="card-title">Échanger des objets</h3>
-                    <p class="card-text">Découvrez des objets près de chez vous que vous pouvez emprunter, échanger ou recevoir.</p>
-                    <a href="/annonces/liste" class="btn btn-outline-primary">
-                        <i class="fas fa-search me-2"></i>Explorer les objets
-                    </a>
-                </div>
+        <div class="col-12"><h3 class="section-title">Comment ça marche ?</h3></div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-user-plus text-primary"></i>
+                <h4>1. Inscrivez-vous</h4>
+                <p>Créez votre profil en 2 minutes, vérifiez votre téléphone pour gagner la confiance de la communauté.</p>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 hover-lift">
-                <div class="card-body text-center p-4">
-                    <i class="fas fa-hands-helping fa-3x text-competence mb-3"></i>
-                    <h3 class="card-title">Partager des compétences</h3>
-                    <p class="card-text">Trouvez des personnes talentueuses près de chez vous et partagez vos propres compétences.</p>
-                    <a href="/competences/liste" class="btn btn-outline-competence">
-                        <i class="fas fa-search me-2"></i>Découvrir les compétences
-                    </a>
-                </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-share-alt text-primary"></i>
+                <h4>2. Partagez</h4>
+                <p>Proposez des objets à prêter ou des compétences à partager avec vos voisins.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-handshake text-primary"></i>
+                <h4>3. Échangez</h4>
+                <p>Trouvez ce dont vous avez besoin et convenez d'un échange équitable avec la messagerie intégrée.</p>
             </div>
         </div>
     </div>
 
-    <!-- Fonctionnalités disponibles -->
-    <div class="row mt-5">
+    <!-- CTA Final -->
+    <div class="row mb-5">
         <div class="col-12">
-            <h2 class="text-center mb-4">Fonctionnalités disponibles</h2>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Fonctionnalité 1 : Authentification -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-success h-100">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Authentification
-                    </h5>
-                    <span class="badge bg-light text-success">COMPLÈTE</span>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Inscription et Connexion</h5>
-                    <p class="card-text">Système complet d'authentification avec gestion de profil avancée.</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>Inscription sécurisée</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Gestion du profil</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Vérification téléphone</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fonctionnalité 2 : Annonces Objets -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-success h-100">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Annonces Objets
-                    </h5>
-                    <span class="badge bg-light text-success">COMPLÈTE</span>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Gestion des Objets</h5>
-                    <p class="card-text">Publication, recherche et gestion complète des annonces d'objets.</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>Création d'annonces</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Recherche avancée</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Gestion des images</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fonctionnalité 3 : Compétences -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-success h-100">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Échanges Compétences
-                    </h5>
-                    <span class="badge bg-light text-success">COMPLÈTE</span>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Partage de Compétences</h5>
-                    <p class="card-text">Proposition et recherche de compétences avec gestion des disponibilités.</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>Création de compétences</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Recherche par localisation</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Gestion des disponibilités</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Statistiques rapides -->
-    <th:block th:if="${session.utilisateur != null}">
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Votre activité</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <div class="stats-card">
-                                    <div class="stats-number" th:text="${nombreAnnoncesActives != null ? nombreAnnoncesActives : '0'}">0</div>
-                                    <div class="stats-label">Annonces actives</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="stats-card" style="background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark))">
-                                    <div class="stats-number" th:text="${nombreCompetencesActives != null ? nombreCompetencesActives : '0'}">0</div>
-                                    <div class="stats-label">Compétences actives</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="stats-card" style="background: linear-gradient(135deg, #f39c12, #e67e22)">
-                                    <div class="stats-number">0</div>
-                                    <div class="stats-label">Échanges en cours</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </th:block>
-
-    <!-- Prochaines étapes -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-info">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-road me-2"></i>Prochaines étapes de développement
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3">
-                            <div class="p-3 border rounded bg-success text-white">
-                                <div class="mb-2">Étapes 1-3</div>
-                                <h6>Fonctions de base</h6>
-                                <small>Authentification, Objets, Compétences</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="p-3 border rounded bg-light">
-                                <div class="text-secondary mb-2">Étape 4</div>
-                                <h6>Transactions</h6>
-                                <small class="text-muted">Échanges et messagerie</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="p-3 border rounded bg-light">
-                                <div class="text-secondary mb-2">Étape 5</div>
-                                <h6>Réputation</h6>
-                                <small class="text-muted">Système d'avis</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="p-3 border rounded bg-light">
-                                <div class="text-secondary mb-2">Étape 6</div>
-                                <h6>Notifications</h6>
-                                <small class="text-muted">Alertes et rappels</small>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card bg-primary text-white">
+                <div class="card-body p-5 text-center">
+                    <h2 class="mb-3">Prêt à rejoindre la communauté ?</h2>
+                    <p class="mb-4">Des centaines de voisins échangent déjà près de chez vous.</p>
+                    <th:block th:if="${session.utilisateur != null}">
+                        <a href="/annonces/liste" class="btn btn-light btn-lg"><i class="fas fa-search me-2"></i>Découvrir les échanges disponibles</a>
+                    </th:block>
+                    <th:block th:unless="${session.utilisateur != null}">
+                        <a href="/inscription" class="btn btn-light btn-lg"><i class="fas fa-user-plus me-2"></i>Créer mon compte gratuitement</a>
+                    </th:block>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-dark text-white mt-5 py-4">
-    <div class="container text-center">
-        <p class="mb-0">
-            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
-        </p>
-        <div class="mt-2">
-            <small class="text-muted">
-                Partagez plus, consommez moins. Créons une communauté solidaire.
-            </small>
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <h4 class="mb-3"><i class="fas fa-exchange-alt me-2"></i>Échange Local</h4>
+                <p class="text-muted">Une plateforme communautaire pour partager objets et compétences entre voisins, favorisant une consommation responsable et des liens sociaux.</p>
+            </div>
+            <div class="col-lg-2 mb-4">
+                <h5 class="mb-3">Navigation</h5>
+                <div class="footer-links d-flex flex-column">
+                    <a href="/accueil">Accueil</a>
+                    <a href="/annonces/liste">Objets</a>
+                    <a href="/competences/liste">Compétences</a>
+                    <a href="/propos">À propos</a>
+                </div>
+            </div>
+            <div class="col-lg-3 mb-4">
+                <h5 class="mb-3">Pour les membres</h5>
+                <div class="footer-links d-flex flex-column">
+                    <a href="/profil">Mon profil</a>
+                    <a href="/annonces/mes-annonces">Mes objets</a>
+                    <a href="/competences/mes-competences">Mes compétences</a>
+                    <a href="/echanges/mes-demandes">Mes échanges</a>
+                </div>
+            </div>
+            <div class="col-lg-3 mb-4">
+                <h5 class="mb-3">Contact</h5>
+                <div class="text-muted">
+                    <p><i class="fas fa-envelope me-2"></i>contact@echangelocal.fr</p>
+                    <p><i class="fas fa-shield-alt me-2"></i>Plateforme sécurisée</p>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4 opacity-25">
+        <div class="text-center">
+            <p class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Échange Local © 2024 - Développé avec <i class="fas fa-heart text-danger mx-1"></i> pour des communautés plus solidaires</p>
         </div>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<style>
-    .btn-competence {
-        background: linear-gradient(135deg, var(--competence-primary), var(--competence-primary-dark));
-        color: white;
-        border: none;
-    }
-    .btn-competence:hover {
-        background: linear-gradient(135deg, var(--competence-primary-dark), #7d3c98);
-        color: white;
-    }
-    .btn-outline-competence {
-        color: var(--competence-primary);
-        border-color: var(--competence-primary);
-    }
-    .btn-outline-competence:hover {
-        background-color: var(--competence-primary);
-        color: white;
-    }
-    .text-competence {
-        color: var(--competence-primary) !important;
-    }
-</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.feature-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-10px)'; });
+            card.addEventListener('mouseleave', function() { this.style.transform = 'translateY(0)'; });
+        });
+    });
+</script>
 </body>
 </html>

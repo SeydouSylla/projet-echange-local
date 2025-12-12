@@ -51,4 +51,19 @@ public class GlobalExceptionHandler {
         redirectAttributes.addFlashAttribute("error", e.getMessage());
         return "redirect:/competences/liste";
     }
+
+    //Pour les echanges
+    @ExceptionHandler(DemandeEchangeNonTrouveeException.class)
+    public String handleDemandeEchangeNonTrouveeException(DemandeEchangeNonTrouveeException e,
+                                                          RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/echanges/mes-demandes";
+    }
+
+    @ExceptionHandler(DemandeEchangeException.class)
+    public String handleDemandeEchangeException(DemandeEchangeException e,
+                                                RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/echanges/mes-demandes";
+    }
 }

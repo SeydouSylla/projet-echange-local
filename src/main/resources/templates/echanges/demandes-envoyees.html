@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes envoyées - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/echanges.css}" rel="stylesheet">
+    <style>
+        .filter-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .status-timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 10px;
+        }
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .status-step {
+            position: relative;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+        .status-step::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            border: 2px solid white;
+        }
+        .status-step.active::before {
+            background-color: #007bff;
+        }
+        .status-step.completed::before {
+            background-color: #28a745;
+        }
+        .status-step.rejected::before {
+            background-color: #dc3545;
+        }
+        .date-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.4rem;
+        }
+        .empty-state {
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2 pulse"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item dropdown">
+                        <!-- CORRECTION: Utiliser role="button" -->
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
+                            <span th:text="${session.utilisateur.prenom}"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
+                            <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Messages de succès/erreur -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/accueil">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/echanges/mes-demandes">Mes échanges</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Demandes envoyées</li>
+        </ol>
+    </nav>
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1"><i class="fas fa-paper-plane me-2"></i>Demandes envoyées</h1>
+            <p class="text-muted mb-0" th:if="${totalDemandes > 0}">
+                <span th:text="${totalDemandes}"></span> demande(s) envoyée(s)
+            </p>
+        </div>
+        <div>
+            <a href="/echanges/mes-demandes" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="card-title mb-3"><i class="fas fa-filter me-2"></i>Filtrer les demandes</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/echanges/demandes-envoyees" class="btn btn-sm"
+                           th:classappend="${statut == null or statut == ''} ? 'btn-primary' : 'btn-outline-primary'">
+                            Toutes
+                        </a>
+                        <a href="/echanges/demandes-envoyees?statut=EN_ATTENTE" class="btn btn-sm"
+                           th:classappend="${statut == 'EN_ATTENTE'} ? 'btn-warning' : 'btn-outline-warning'">
+                            <i class="fas fa-clock me-1"></i>En attente
+                        </a>
+                        <a href="/echanges/demandes-envoyees?statut=ACCEPTEE" class="btn btn-sm"
+                           th:classappend="${statut == 'ACCEPTEE'} ? 'btn-success' : 'btn-outline-success'">
+                            <i class="fas fa-check me-1"></i>Acceptées
+                        </a>
+                        <a href="/echanges/demandes-envoyees?statut=REFUSEE" class="btn btn-sm"
+                           th:classappend="${statut == 'REFUSEE'} ? 'btn-danger' : 'btn-outline-danger'">
+                            <i class="fas fa-times me-1"></i>Refusées
+                        </a>
+                        <a href="/echanges/demandes-envoyees?statut=ANNULEE" class="btn btn-sm"
+                           th:classappend="${statut == 'ANNULEE'} ? 'btn-secondary' : 'btn-outline-secondary'">
+                            <i class="fas fa-ban me-1"></i>Annulées
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mt-3 mt-md-0">
+                        <span class="text-muted me-2">Trier par :</span>
+                        <div class="btn-group btn-group-sm">
+                            <a th:href="@{/echanges/demandes-envoyees(statut=${statut}, sort='dateCreation,desc')}" class="btn btn-outline-secondary">
+                                Plus récentes
+                            </a>
+                            <a th:href="@{/echanges/demandes-envoyees(statut=${statut}, sort='dateProposee,asc')}" class="btn btn-outline-secondary">
+                                Date d'échange
+                            </a>
+                            <a th:href="@{/echanges/demandes-envoyees(statut=${statut}, sort='statut,asc')}" class="btn btn-outline-secondary">
+                                Statut
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des demandes -->
+    <div class="card">
+        <div class="card-body p-0">
+            <th:block th:if="${demandesPage != null && demandesPage.totalElements > 0}">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width: 20%;">Destinataire</th>
+                            <th style="width: 20%;">Objet/Compétence</th>
+                            <th style="width: 25%;">Détails</th>
+                            <th style="width: 20%;">Statut</th>
+                            <th style="width: 15%;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="demande : ${demandesPage.content}" class="demande-row">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <th:block th:if="${demande.destinataire.photoProfil}">
+                                            <img th:src="@{'/uploads/profils/' + ${demande.destinataire.photoProfil}}"
+                                                 class="rounded-circle" width="40" height="40" alt="Photo">
+                                        </th:block>
+                                        <th:block th:unless="${demande.destinataire.photoProfil}">
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                        </th:block>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <strong th:text="${demande.destinataire.prenom + ' ' + demande.destinataire.nom}"></strong>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            <span th:text="${demande.destinataire.localisation}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <th:block th:if="${demande.annonce != null}">
+                                        <a th:href="@{/annonces/{id}(id=${demande.annonce.id})}"
+                                           class="fw-bold text-decoration-none">
+                                            <i class="fas fa-box me-1"></i>
+                                            <span th:text="${demande.annonce.titre}"></span>
+                                        </a>
+                                        <div class="small text-muted mt-1">
+                                            <span th:text="${demande.annonce.categorie}"></span>
+                                        </div>
+                                    </th:block>
+                                    <th:block th:if="${demande.competence != null}">
+                                        <a th:href="@{/competences/{id}(id=${demande.competence.id})}"
+                                           class="fw-bold text-decoration-none">
+                                            <i class="fas fa-hands-helping me-1"></i>
+                                            <span th:text="${demande.competence.titre}"></span>
+                                        </a>
+                                        <div class="small text-muted mt-1">
+                                            <span th:text="${demande.competence.categorie}"></span>
+                                        </div>
+                                    </th:block>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mb-2">
+                                    <strong>Proposition :</strong>
+                                    <span class="small" th:text="${demande.propositionEchange}"></span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Date :</strong>
+                                    <span class="small">
+                                        <i class="far fa-calendar me-1"></i>
+                                        <span th:text="${#temporals.format(demande.dateProposee, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    Envoyée le
+                                    <span th:text="${#temporals.format(demande.dateCreation, 'dd/MM/yyyy')}"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-timeline">
+                                    <div class="status-step completed">
+                                        <strong>Demande envoyée</strong>
+                                        <div class="text-muted" th:text="${#temporals.format(demande.dateCreation, 'dd/MM HH:mm')}"></div>
+                                    </div>
+
+                                    <div th:classappend="${demande.statut.name() == 'EN_ATTENTE'} ? 'status-step active' :
+                                                         ${demande.statut.name() == 'ACCEPTEE'} ? 'status-step completed' :
+                                                         'status-step completed'">
+                                        <th:block th:if="${demande.statut.name() == 'ACCEPTEE'}">
+                                            <strong class="text-success">Demande acceptée</strong>
+                                        </th:block>
+                                        <th:block th:if="${demande.statut.name() == 'REFUSEE'}">
+                                            <strong class="text-danger">Demande refusée</strong>
+                                        </th:block>
+                                        <th:block th:if="${demande.statut.name() == 'EN_ATTENTE'}">
+                                            <strong>En attente de réponse</strong>
+                                        </th:block>
+                                        <th:block th:if="${demande.statut.name() == 'ANNULEE'}">
+                                            <strong class="text-secondary">Demande annulée</strong>
+                                        </th:block>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <th:block th:switch="${demande.statut.name()}">
+                                        <span th:case="'EN_ATTENTE'" class="badge badge-en-attente">
+                                            <i class="fas fa-clock me-1"></i>En attente
+                                        </span>
+                                        <span th:case="'ACCEPTEE'" class="badge badge-accepte">
+                                            <i class="fas fa-check me-1"></i>Acceptée
+                                        </span>
+                                        <span th:case="'REFUSEE'" class="badge badge-refuse">
+                                            <i class="fas fa-times me-1"></i>Refusée
+                                        </span>
+                                        <span th:case="'ANNULEE'" class="badge bg-secondary">
+                                            <i class="fas fa-ban me-1"></i>Annulée
+                                        </span>
+                                    </th:block>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    <!-- CORRECTION: Afficher le bouton messagerie pour les demandes ACCEPTEES -->
+                                    <th:block th:if="${demande.statut.name() == 'ACCEPTEE'}">
+                                        <a th:href="@{/echanges/messagerie/{id}(id=${demande.id})}"
+                                           class="btn btn-primary btn-sm w-100">
+                                            <i class="fas fa-comments me-1"></i>Messagerie
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="${demande.statut.name() == 'EN_ATTENTE'}">
+                                        <form th:action="@{/echanges/annuler/{id}(id=${demande.id})}"
+                                              method="post">
+                                            <button type="submit" class="btn btn-warning btn-sm w-100"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir annuler cette demande ?')">
+                                                <i class="fas fa-ban me-1"></i>Annuler
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <th:block th:if="${demande.statut.name() == 'REFUSEE' || demande.statut.name() == 'ANNULEE'}">
+                                        <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-info-circle me-1"></i>Terminée
+                                        </button>
+                                    </th:block>
+
+                                    <a th:href="${demande.annonce != null} ?
+                                                  @{/annonces/{id}(id=${demande.annonce.id})} :
+                                                  @{/competences/{id}(id=${demande.competence.id})}"
+                                       class="btn btn-outline-info btn-sm w-100">
+                                        <i class="fas fa-eye me-1"></i>Voir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${demandesPage.totalPages > 1}" class="card-footer">
+                    <nav aria-label="Pagination des demandes">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/echanges/demandes-envoyees(page=0, statut=${statut})}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/echanges/demandes-envoyees(page=${currentPage - 1}, statut=${statut})}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+
+                            <li th:each="page : ${#numbers.sequence(0, demandesPage.totalPages - 1)}"
+                                th:if="${(page >= currentPage - 2 and page <= currentPage + 2) or page == 0 or page == demandesPage.totalPages - 1}"
+                                class="page-item" th:classappend="${page == currentPage} ? 'active' : ''">
+                                <a class="page-link" th:href="@{/echanges/demandes-envoyees(page=${page}, statut=${statut})}"
+                                   th:text="${page + 1}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${currentPage == demandesPage.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/echanges/demandes-envoyees(page=${currentPage + 1}, statut=${statut})}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${currentPage == demandesPage.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/echanges/demandes-envoyees(page=${demandesPage.totalPages - 1}, statut=${statut})}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="text-center mt-2 small text-muted">
+                            Page <span th:text="${currentPage + 1}"></span> sur
+                            <span th:text="${demandesPage.totalPages}"></span> -
+                            <span th:text="${totalDemandes}"></span> demande(s) au total
+                        </div>
+                    </nav>
+                </div>
+            </th:block>
+
+            <!-- État vide -->
+            <th:block th:unless="${demandesPage != null && demandesPage.totalElements > 0}">
+                <div class="empty-state">
+                    <i class="fas fa-paper-plane fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune demande envoyée</h5>
+                    <p class="text-muted mb-4">Vous n'avez envoyé aucune demande d'échange pour le moment.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/annonces/liste" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Trouver un objet
+                        </a>
+                        <a href="/competences/liste" class="btn btn-success">
+                            <i class="fas fa-search me-1"></i>Trouver une compétence
+                        </a>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- CORRECTION: Statistiques complètes depuis le contrôleur -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="text-primary" th:text="${totalDemandes != null ? totalDemandes : 0}">0</h2>
+                    <p class="text-muted mb-0">Demandes totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="text-warning" th:text="${demandesEnAttente != null ? demandesEnAttente : 0}">0</h2>
+                    <p class="text-muted mb-0">En attente</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="text-success" th:text="${demandesAcceptees != null ? demandesAcceptees : 0}">0</h2>
+                    <p class="text-muted mb-0">Acceptées</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="text-danger" th:text="${demandesRefusees != null ? demandesRefusees : 0}">0</h2>
+                    <p class="text-muted mb-0">Refusées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

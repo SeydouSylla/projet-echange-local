@@ -16,7 +16,7 @@
 /* Styles généraux */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #1876f2a8;
+    background: #fff;
     min-height: 100vh;
     color: var(--text-color);
     margin: 0;
