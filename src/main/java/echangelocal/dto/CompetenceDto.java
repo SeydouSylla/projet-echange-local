@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * DTO (Data Transfer Object) pour la création et modification de compétences.
- * Pattern DTO - Transfert sécurisé des données entre les couches.
+ * DTO - Transfert sécurisé des données entre les couches.
  */
 public class CompetenceDto {
 

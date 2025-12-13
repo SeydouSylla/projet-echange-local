@@ -28,7 +28,6 @@
             <ul class="navbar-nav ms-auto">
                 <th:block th:if="${session.utilisateur != null}">
                     <li class="nav-item dropdown">
-                        <!-- CORRECTION: Utiliser role="button" au lieu de href="#" -->
                         <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button" aria-expanded="false">
                             <th:block th:if="${session.utilisateur.photoProfil}">
                                 <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
@@ -44,7 +43,10 @@
                             <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
                             <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
                             <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
-                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <a class="dropdown-item active" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <a class="dropdown-item" href="/echanges/historique"><i class="fas fa-history me-2"></i>Historique</a>
+                            <a class="dropdown-item" href="/avis/mes-avis"><i class="fas fa-star me-2"></i>Mes avis</a>
+                            <a class="dropdown-item" href="/avis/tous"><i class="fas fa-globe me-2"></i>Tous les avis</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
                         </div>
@@ -92,9 +94,13 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stats-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
-                <div class="stats-number" th:text="${demandesRecues != null ? demandesRecues.size() : 0}">0</div>
-                <div class="stats-label">Demandes reçues</div>
+            <div class="stats-card" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                <div class="stats-number" th:text="${echangesTermines != null ? echangesTermines.size() : 0}">0</div>
+                <div class="stats-label">
+                    <a href="/echanges/historique" class="text-white text-decoration-none">
+                        Échanges terminés <i class="fas fa-external-link-alt ms-1 small"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -123,8 +129,15 @@
                 <i class="fas fa-sync-alt me-2"></i>Échanges actifs
             </button>
         </li>
-    </ul>
 
+        <!-- Onglet pour les échanges terminés (aperçu) -->
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-white" id="termines-tab"
+                    data-bs-toggle="tab" data-bs-target="#termines" type="button">
+                <i class="fas fa-check-circle me-2"></i>Échanges terminés
+            </button>
+        </li>
+    </ul>
 
     <!-- Contenu des onglets -->
     <div class="tab-content" id="echangesTabContent">
@@ -176,6 +189,7 @@
                                             <span th:case="'ACCEPTEE'" class="badge badge-accepte">Acceptée</span>
                                             <span th:case="'REFUSEE'" class="badge badge-refuse">Refusée</span>
                                             <span th:case="'ANNULEE'" class="badge bg-secondary">Annulée</span>
+                                            <span th:case="'TERMINEE'" class="badge bg-success">Terminée</span>
                                         </th:block>
                                     </td>
                                     <td>
@@ -198,6 +212,14 @@
                                                class="btn btn-primary btn-sm">
                                                 <i class="fas fa-comments"></i> Discuter
                                             </a>
+                                            <!-- NOUVEAU: Bouton pour laisser un avis -->
+                                            <a th:href="@{/avis/laisser/{id}(id=${demande.id})}"
+                                               class="btn btn-warning btn-sm ms-1">
+                                                <i class="fas fa-star"></i> Avis
+                                            </a>
+                                        </th:block>
+                                        <th:block th:if="${demande.statut.name() == 'TERMINEE'}">
+                                            <span class="badge bg-success">Échange terminé</span>
                                         </th:block>
                                     </td>
                                 </tr>
@@ -263,6 +285,7 @@
                                             <span th:case="'ACCEPTEE'" class="badge badge-accepte">Acceptée</span>
                                             <span th:case="'REFUSEE'" class="badge badge-refuse">Refusée</span>
                                             <span th:case="'ANNULEE'" class="badge bg-secondary">Annulée</span>
+                                            <span th:case="'TERMINEE'" class="badge bg-success">Terminée</span>
                                         </th:block>
                                     </td>
                                     <td>
@@ -275,12 +298,19 @@
                                                 </button>
                                             </form>
                                         </th:block>
-                                        <!-- CORRECTION: Afficher le bouton messagerie pour le demandeur -->
                                         <th:block th:if="${demande.statut.name() == 'ACCEPTEE'}">
                                             <a th:href="@{/echanges/messagerie/{id}(id=${demande.id})}"
                                                class="btn btn-primary btn-sm">
                                                 <i class="fas fa-comments"></i> Discuter
                                             </a>
+                                            <!-- NOUVEAU: Bouton pour laisser un avis -->
+                                            <a th:href="@{/avis/laisser/{id}(id=${demande.id})}"
+                                               class="btn btn-warning btn-sm ms-1">
+                                                <i class="fas fa-star"></i> Avis
+                                            </a>
+                                        </th:block>
+                                        <th:block th:if="${demande.statut.name() == 'TERMINEE'}">
+                                            <span class="badge bg-success">Échange terminé</span>
                                         </th:block>
                                     </td>
                                 </tr>
@@ -345,10 +375,17 @@
                                                     <i class="fas fa-calendar me-1"></i>
                                                     <span th:text="${#temporals.format(echange.dateProposee, 'dd/MM/yyyy HH:mm')}"></span>
                                                 </small>
-                                                <a th:href="@{/echanges/messagerie/{id}(id=${echange.id})}"
-                                                   class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-comments me-1"></i>Messagerie
-                                                </a>
+                                                <div>
+                                                    <a th:href="@{/echanges/messagerie/{id}(id=${echange.id})}"
+                                                       class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-comments me-1"></i>Messagerie
+                                                    </a>
+                                                    <!-- NOUVEAU: Bouton pour laisser un avis -->
+                                                    <a th:href="@{/avis/laisser/{id}(id=${echange.id})}"
+                                                       class="btn btn-warning btn-sm ms-1">
+                                                        <i class="fas fa-star"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -368,6 +405,73 @@
                 </div>
             </div>
         </div>
+
+        <!-- Onglet échanges terminés -->
+        <div class="tab-pane fade" id="termines" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Échanges terminés (aperçu)</h5>
+                    <a href="/echanges/historique" class="btn btn-sm btn-primary">
+                        <i class="fas fa-history me-1"></i>Voir l'historique complet
+                    </a>
+                </div>
+                <div class="card-body">
+                    <th:block th:if="${echangesTermines != null && !echangesTermines.isEmpty()}">
+                        <div class="row">
+                            <th:block th:each="echange, iterStat : ${echangesTermines}">
+                                <!-- Afficher seulement les 4 premiers -->
+                                <div class="col-md-6 mb-3" th:if="${iterStat.index < 4}">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">
+                                                    <th:block th:if="${echange.annonce != null}">
+                                                        <i class="fas fa-box me-1 text-primary"></i>
+                                                        <span th:text="${echange.annonce.titre}"></span>
+                                                    </th:block>
+                                                    <th:block th:if="${echange.competence != null}">
+                                                        <i class="fas fa-hands-helping me-1 text-success"></i>
+                                                        <span th:text="${echange.competence.titre}"></span>
+                                                    </th:block>
+                                                </h6>
+                                                <span class="badge bg-success">Terminé</span>
+                                            </div>
+                                            <p class="small text-muted mb-2">
+                                                Avec <strong>
+                                                <th:block th:if="${utilisateur.id == echange.demandeur.id}">
+                                                    <span th:text="${echange.destinataire.prenom}"></span>
+                                                </th:block>
+                                                <th:block th:if="${utilisateur.id == echange.destinataire.id}">
+                                                    <span th:text="${echange.demandeur.prenom}"></span>
+                                                </th:block>
+                                            </strong>
+                                            </p>
+                                            <a th:href="@{/echanges/messagerie/{id}(id=${echange.id})}"
+                                               class="btn btn-sm btn-outline-primary w-100">
+                                                <i class="fas fa-history me-1"></i>Voir l'historique
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+                        <div class="text-center mt-3" th:if="${echangesTermines.size() > 4}">
+                            <a href="/echanges/historique" class="btn btn-primary">
+                                <i class="fas fa-history me-1"></i>Voir tous les échanges terminés
+                                (<span th:text="${echangesTermines.size()}"></span>)
+                            </a>
+                        </div>
+                    </th:block>
+                    <th:block th:unless="${echangesTermines != null && !echangesTermines.isEmpty()}">
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun échange terminé pour le moment.</p>
+                            <p class="small text-muted">Les échanges avec avis mutuels apparaîtront ici.</p>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -382,7 +486,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Activer l'onglet sauvegardé dans sessionStorage
     document.addEventListener('DOMContentLoaded', function() {
         const activeTab = sessionStorage.getItem('activeEchangeTab');
         if (activeTab) {
@@ -390,7 +493,6 @@
             tab.show();
         }
 
-        // Sauvegarder l'onglet actif
         document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
             tab.addEventListener('shown.bs.tab', function(event) {
                 const activeTab = event.target.getAttribute('id').replace('-tab', '');

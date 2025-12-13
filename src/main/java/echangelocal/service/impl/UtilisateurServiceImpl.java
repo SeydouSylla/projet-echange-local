@@ -28,9 +28,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationProperties applicationProperties;
 
-    // Stockage temporaire des codes de vérification (en production, utiliser Redis)
+    // Stockage temporaire des codes de vérification du téléphone
     private final ConcurrentHashMap<Long, String> codesVerification = new ConcurrentHashMap<>();
 
+    // Constructeur injectant les dépendances nécessaires au service utilisateur
     @Autowired
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
                                   PasswordEncoder passwordEncoder,
@@ -40,6 +41,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         this.applicationProperties = applicationProperties;
     }
 
+    // Inscrit un nouvel utilisateur après vérification de l'unicité de l'email
     @Override
     public Utilisateur inscrireUtilisateur(InscriptionDto inscriptionDto) {
         if (utilisateurRepository.existsByEmail(inscriptionDto.getEmail())) {
@@ -56,16 +58,19 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
+    // Recherche un utilisateur à partir de son email
     @Override
     public Optional<Utilisateur> trouverParEmail(String email) {
         return utilisateurRepository.findByEmail(email);
     }
 
+    // Recherche un utilisateur à partir de son identifiant
     @Override
     public Optional<Utilisateur> trouverParId(Long id) {
         return utilisateurRepository.findById(id);
     }
 
+    // Met à jour les informations du profil utilisateur
     @Override
     public Utilisateur mettreAJourProfil(Long id, ProfilDto profilDto) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
@@ -76,7 +81,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setLocalisation(profilDto.getLocalisation());
         utilisateur.setBiographie(profilDto.getBiographie());
 
-        // Validation et mise à jour du téléphone - NE PAS RÉINITIALISER LA VÉRIFICATION SI LE NUMÉRO NE CHANGE PAS
+        // Validation et mise à jour du numéro de téléphone
         if (profilDto.getTelephone() != null && !profilDto.getTelephone().trim().isEmpty()) {
             if (!TelephoneUtil.estNumeroTelephoneValide(profilDto.getTelephone())) {
                 throw new TelephoneInvalideException("Le format du numéro de téléphone est invalide");
@@ -85,14 +90,13 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             String nouveauTelephoneFormate = TelephoneUtil.formaterNumeroTelephone(profilDto.getTelephone());
             String ancienTelephone = utilisateur.getTelephone();
 
-            // Vérifier si le numéro a réellement changé
+            // Réinitialiser la vérification uniquement si le numéro change
             if (!nouveauTelephoneFormate.equals(ancienTelephone)) {
                 utilisateur.setTelephone(nouveauTelephoneFormate);
-                utilisateur.setTelephoneVerifie(false); // Réinitialiser seulement si le numéro change
+                utilisateur.setTelephoneVerifie(false);
             }
-            // Si le numéro est le même, on garde le statut de vérification actuel
         } else {
-            // Si on supprime le numéro
+            // Supprime le numéro de téléphone si aucun n'est fourni
             utilisateur.setTelephone(null);
             utilisateur.setTelephoneVerifie(false);
         }
@@ -100,39 +104,42 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
+    // Met à jour la photo de profil de l'utilisateur
     @Override
     public Utilisateur mettreAJourPhotoProfil(Long utilisateurId, MultipartFile fichier) throws IOException {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new UtilisateurNonTrouveException("Utilisateur non trouvé"));
 
-        // Vérifier que le fichier n'est pas vide
+        // Vérifie que le fichier n'est pas vide
         if (fichier.isEmpty()) {
             throw new IllegalArgumentException("Le fichier est vide");
         }
 
-        // Vérifier le type MIME
+        // Vérifie que le fichier est bien une image
         String contentType = fichier.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Le fichier doit être une image");
         }
 
-        // Supprimer l'ancienne photo si elle existe
+        // Supprime l'ancienne photo si elle existe
         if (utilisateur.getPhotoProfil() != null) {
             FileStorageUtil.supprimerFichier(utilisateur.getPhotoProfil(), applicationProperties.getUploadDir());
         }
 
-        // Sauvegarder la nouvelle photo
+        // Sauvegarde la nouvelle photo sur le disque
         String nomFichier = FileStorageUtil.sauvegarderFichier(fichier, applicationProperties.getUploadDir());
         utilisateur.setPhotoProfil(nomFichier);
 
         return utilisateurRepository.save(utilisateur);
     }
 
+    // Vérifie si un mot de passe correspond à sa version chiffrée
     @Override
     public boolean verifierMotDePasse(String motDePasseClair, String motDePasseCrypte) {
         return passwordEncoder.matches(motDePasseClair, motDePasseCrypte);
     }
 
+    // Génère un code de vérification pour le numéro de téléphone de l'utilisateur
     @Override
     public String genererCodeVerificationTelephone(Long utilisateurId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
@@ -142,16 +149,17 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new TelephoneInvalideException("Aucun numéro de téléphone à vérifier");
         }
 
-        // Générer un code à 6 chiffres
+        // Génère un code aléatoire à 6 chiffres
         String code = String.format("%06d", ThreadLocalRandom.current().nextInt(0, 1000000));
         codesVerification.put(utilisateurId, code);
 
-        // En production, envoyer le code par SMS via un service externe
+        // Simulation de l'envoi du code par SMS
         System.out.println("Code de vérification pour " + utilisateur.getTelephone() + ": " + code);
 
         return code;
     }
 
+    // Vérifie le code de validation du téléphone et confirme le numéro
     @Override
     public void verifierTelephone(Long utilisateurId, String codeVerification) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
@@ -166,7 +174,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setTelephoneVerifie(true);
         utilisateurRepository.save(utilisateur);
 
-        // Nettoyer le code après utilisation
+        // Supprime le code après validation
         codesVerification.remove(utilisateurId);
     }
 }

@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Contrôleur pour la gestion des compétences.
- * Pattern MVC - Gestion des requêtes HTTP et navigation.
+  Contrôleur pour la gestion des compétences.
+  Pattern MVC - Gestion des requêtes HTTP et navigation.
  */
 @Controller
 @RequestMapping("/competences")

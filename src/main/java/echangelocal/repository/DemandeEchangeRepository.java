@@ -12,63 +12,83 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/*
+  Repository pour la gestion des demandes d'échange
+  Respecte le principe d'Interface Segregation
+ */
 @Repository
 public interface DemandeEchangeRepository extends JpaRepository<DemandeEchange, Long> {
 
-    // ============ RECHERCHE PAR UTILISATEUR (Listes) ============
+    // ============ RECHERCHE PAR UTILISATEUR ============
+
+    // Trouve toutes les demandes envoyées par un utilisateur
     List<DemandeEchange> findByDemandeurOrderByDateCreationDesc(Utilisateur demandeur);
 
+    // Trouve toutes les demandes reçues par un utilisateur
     List<DemandeEchange> findByDestinataireOrderByDateCreationDesc(Utilisateur destinataire);
 
-    // ============ RECHERCHE PAR UTILISATEUR (Pages) ============
-    Page<DemandeEchange> findByDemandeur(Utilisateur demandeur, Pageable pageable);
+    // Trouve une demande par ID et demandeur
+    Optional<DemandeEchange> findByIdAndDemandeur(Long id, Utilisateur demandeur);
 
+    // Trouve une demande par ID et destinataire
+    Optional<DemandeEchange> findByIdAndDestinataire(Long id, Utilisateur destinataire);
+
+    // ============ RECHERCHE AVEC MESSAGES ============
+
+    // Trouve une demande avec ses messages
+    @Query("SELECT d FROM DemandeEchange d LEFT JOIN FETCH d.messages WHERE d.id = :id")
+    Optional<DemandeEchange> findByIdWithMessages(@Param("id") Long id);
+
+    // ============ PAGINATION ============
+
+    // Trouve les demandes reçues paginées
     Page<DemandeEchange> findByDestinataire(Utilisateur destinataire, Pageable pageable);
 
-    Page<DemandeEchange> findByDemandeurAndStatut(Utilisateur demandeur,
-                                                  DemandeEchange.StatutDemande statut,
-                                                  Pageable pageable);
+    // Trouve les demandes envoyées paginées
+    Page<DemandeEchange> findByDemandeur(Utilisateur demandeur, Pageable pageable);
 
+    // Trouve les demandes reçues par statut
     Page<DemandeEchange> findByDestinataireAndStatut(Utilisateur destinataire,
                                                      DemandeEchange.StatutDemande statut,
                                                      Pageable pageable);
 
-    // ============ REQUÊTES PERSONNALISÉES ============
-    @Query("SELECT d FROM DemandeEchange d WHERE d.destinataire = :utilisateur AND d.statut = 'EN_ATTENTE'")
-    List<DemandeEchange> findDemandesEnAttentePourDestinataire(@Param("utilisateur") Utilisateur utilisateur);
+    // Trouve les demandes envoyées par statut
+    Page<DemandeEchange> findByDemandeurAndStatut(Utilisateur demandeur,
+                                                  DemandeEchange.StatutDemande statut,
+                                                  Pageable pageable);
 
+    // ============ ÉCHANGES ACTIFS ET TERMINÉS ============
+
+    // Trouve tous les échanges actifs d'un utilisateur (ACCEPTEE)
     @Query("SELECT d FROM DemandeEchange d WHERE (d.demandeur = :utilisateur OR d.destinataire = :utilisateur) " +
-            "AND d.statut = 'ACCEPTEE' ORDER BY d.dateModification DESC")
+            "AND d.statut = 'ACCEPTEE' ORDER BY d.dateCreation DESC")
     List<DemandeEchange> findEchangesActifs(@Param("utilisateur") Utilisateur utilisateur);
 
+    // Trouve tous les échanges terminés d'un utilisateur (TERMINEE)
+    @Query("SELECT d FROM DemandeEchange d WHERE (d.demandeur = :utilisateur OR d.destinataire = :utilisateur) " +
+            "AND d.statut = 'TERMINEE' ORDER BY d.dateCreation DESC")
+    List<DemandeEchange> findEchangesTermines(@Param("utilisateur") Utilisateur utilisateur);
+
+    // Trouve tous les échanges terminés d'un utilisateur paginés
+    @Query("SELECT d FROM DemandeEchange d WHERE (d.demandeur = :utilisateur OR d.destinataire = :utilisateur) " +
+            "AND d.statut = 'TERMINEE' ORDER BY d.dateCreation DESC")
+    Page<DemandeEchange> findEchangesTerminesPage(@Param("utilisateur") Utilisateur utilisateur, Pageable pageable);
+
+    // ============ STATISTIQUES ============
+
+    // Compte le nombre de demandes en attente reçues
     @Query("SELECT COUNT(d) FROM DemandeEchange d WHERE d.destinataire = :utilisateur AND d.statut = 'EN_ATTENTE'")
     long countDemandesEnAttente(@Param("utilisateur") Utilisateur utilisateur);
 
-    @Query("SELECT d FROM DemandeEchange d LEFT JOIN FETCH d.messages WHERE d.id = :id")
-    Optional<DemandeEchange> findByIdWithMessages(@Param("id") Long id);
+    // Compte les demandes reçues par statut
+    long countByDestinataireAndStatut(Utilisateur destinataire, DemandeEchange.StatutDemande statut);
 
-    // ============ RECHERCHE PAR ID ET UTILISATEUR ============
-    Optional<DemandeEchange> findByIdAndDestinataire(Long id, Utilisateur destinataire);
+    // Compte toutes les demandes reçues
+    long countByDestinataire(Utilisateur destinataire);
 
-    Optional<DemandeEchange> findByIdAndDemandeur(Long id, Utilisateur demandeur);
+    // Compte les demandes envoyées par statut
+    long countByDemandeurAndStatut(Utilisateur demandeur, DemandeEchange.StatutDemande statut);
 
-    // ============ NOUVELLES MÉTHODES POUR LES STATISTIQUES ============
-
-    // Compter les demandes reçues par statut
-    @Query("SELECT COUNT(d) FROM DemandeEchange d WHERE d.destinataire = :utilisateur AND d.statut = :statut")
-    long countByDestinataireAndStatut(@Param("utilisateur") Utilisateur utilisateur,
-                                      @Param("statut") DemandeEchange.StatutDemande statut);
-
-    // Compter toutes les demandes reçues
-    @Query("SELECT COUNT(d) FROM DemandeEchange d WHERE d.destinataire = :utilisateur")
-    long countByDestinataire(@Param("utilisateur") Utilisateur utilisateur);
-
-    // Compter les demandes envoyées par statut
-    @Query("SELECT COUNT(d) FROM DemandeEchange d WHERE d.demandeur = :utilisateur AND d.statut = :statut")
-    long countByDemandeurAndStatut(@Param("utilisateur") Utilisateur utilisateur,
-                                   @Param("statut") DemandeEchange.StatutDemande statut);
-
-    // Compter toutes les demandes envoyées
-    @Query("SELECT COUNT(d) FROM DemandeEchange d WHERE d.demandeur = :utilisateur")
-    long countByDemandeur(@Param("utilisateur") Utilisateur utilisateur);
+    // Compte toutes les demandes envoyées
+    long countByDemandeur(Utilisateur demandeur);
 }

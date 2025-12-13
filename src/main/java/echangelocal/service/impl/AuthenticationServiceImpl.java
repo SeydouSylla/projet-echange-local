@@ -19,6 +19,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UtilisateurService utilisateurService;
     private final UtilisateurRepository utilisateurRepository;
 
+    // Constructeur pour injecter les services nécessaires à l’authentification
     @Autowired
     public AuthenticationServiceImpl(UtilisateurService utilisateurService,
                                      UtilisateurRepository utilisateurRepository) {
@@ -26,6 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
+    // Vérifie les identifiants de l'utilisateur à partir de son email et mot de passe
     @Override
     public boolean authentifierUtilisateur(String email, String motDePasse) {
         Optional<Utilisateur> utilisateurOpt = utilisateurService.trouverParEmail(email);
@@ -38,11 +40,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return false;
     }
 
+    // Déconnecte l'utilisateur en supprimant le contexte de sécurité
     @Override
     public void deconnecterUtilisateur() {
         SecurityContextHolder.clearContext();
     }
 
+    // Récupère l'utilisateur actuellement authentifié depuis le contexte de sécurité
     public Utilisateur getUtilisateurConnecte() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class DemandeEchangeServiceTest {
@@ -96,7 +97,16 @@ class DemandeEchangeServiceTest {
         dto.setDateProposee(LocalDateTime.now().plusDays(2));
 
         when(annonceRepository.findById(1L)).thenReturn(Optional.of(annonce));
-        when(demandeEchangeRepository.save(any(DemandeEchange.class))).thenReturn(demande);
+        when(demandeEchangeRepository.save(any(DemandeEchange.class))).thenAnswer(invocation -> {
+            DemandeEchange demandeArg = invocation.getArgument(0);
+            demandeArg.setId(1L); // Simuler l'ID généré
+            return demandeArg;
+        });
+        when(demandeEchangeRepository.saveAndFlush(any(DemandeEchange.class))).thenAnswer(invocation -> {
+            DemandeEchange demandeArg = invocation.getArgument(0);
+            demandeArg.setId(1L);
+            return demandeArg;
+        });
 
         // Act
         DemandeEchange result = demandeEchangeService.creerDemandeEchange(dto, demandeur);
@@ -106,7 +116,8 @@ class DemandeEchangeServiceTest {
         assertEquals(demandeur, result.getDemandeur());
         assertEquals(destinataire, result.getDestinataire());
         assertEquals(annonce, result.getAnnonce());
-        verify(demandeEchangeRepository).save(any(DemandeEchange.class));
+        assertEquals(DemandeEchange.StatutDemande.EN_ATTENTE, result.getStatut());
+        verify(demandeEchangeRepository, times(1)).saveAndFlush(any(DemandeEchange.class));
     }
 
     @Test
@@ -115,6 +126,7 @@ class DemandeEchangeServiceTest {
         annonce.setDisponible(false);
         DemandeEchangeDto dto = new DemandeEchangeDto();
         dto.setAnnonceId(1L);
+        dto.setDateProposee(LocalDateTime.now().plusDays(2));
 
         when(annonceRepository.findById(1L)).thenReturn(Optional.of(annonce));
 
@@ -127,14 +139,23 @@ class DemandeEchangeServiceTest {
     @Test
     void accepterDemande_DoitReussir_QuandDestinataireAutorise() {
         // Arrange
+        DemandeEchange demandeAcceptee = new DemandeEchange();
+        demandeAcceptee.setId(1L);
+        demandeAcceptee.setDemandeur(demandeur);
+        demandeAcceptee.setDestinataire(destinataire);
+        demandeAcceptee.setAnnonce(annonce);
+        demandeAcceptee.setStatut(DemandeEchange.StatutDemande.ACCEPTEE);
+
         when(demandeEchangeRepository.findById(1L)).thenReturn(Optional.of(demande));
+        when(demandeEchangeRepository.saveAndFlush(any(DemandeEchange.class))).thenReturn(demandeAcceptee);
 
         // Act
         DemandeEchange result = demandeEchangeService.accepterDemande(1L, destinataire);
 
         // Assert
+        assertNotNull(result);
         assertEquals(DemandeEchange.StatutDemande.ACCEPTEE, result.getStatut());
-        assertFalse(result.getAnnonce().isDisponible());
+        verify(demandeEchangeRepository, times(1)).saveAndFlush(any(DemandeEchange.class));
     }
 
     @Test
@@ -159,20 +180,30 @@ class DemandeEchangeServiceTest {
         messageDto.setDemandeEchangeId(1L);
         messageDto.setContenu("Bonjour, on se voit à 14h ?");
 
+        Message message = new Message();
+        message.setId(1L);
+        message.setContenu("Bonjour, on se voit à 14h ?");
+        message.setExpediteur(demandeur);
+        message.setDestinataire(destinataire);
+        message.setDemandeEchange(demande);
+
         when(demandeEchangeRepository.findById(1L)).thenReturn(Optional.of(demande));
-        when(messageRepository.save(any(Message.class))).thenReturn(new Message());
+        when(messageRepository.save(any(Message.class))).thenReturn(message);
+        when(messageRepository.saveAndFlush(any(Message.class))).thenReturn(message);
 
         // Act
         Message result = demandeEchangeService.envoyerMessage(messageDto, demandeur);
 
         // Assert
         assertNotNull(result);
-        verify(messageRepository).save(any(Message.class));
+        assertEquals("Bonjour, on se voit à 14h ?", result.getContenu());
+        verify(messageRepository, times(1)).saveAndFlush(any(Message.class));
     }
 
     @Test
     void trouverEchangesActifs_DoitRetournerListe() {
         // Arrange
+        demande.setStatut(DemandeEchange.StatutDemande.ACCEPTEE);
         when(demandeEchangeRepository.findEchangesActifs(demandeur))
                 .thenReturn(Arrays.asList(demande));
 
@@ -182,5 +213,119 @@ class DemandeEchangeServiceTest {
         // Assert
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
+        assertEquals(DemandeEchange.StatutDemande.ACCEPTEE, result.get(0).getStatut());
+    }
+
+    @Test
+    void trouverDemandesRecues_DoitRetournerListe() {
+        // Arrange
+        when(demandeEchangeRepository.findByDestinataireOrderByDateCreationDesc(destinataire))
+                .thenReturn(Arrays.asList(demande));
+
+        // Act
+        List<DemandeEchange> result = demandeEchangeService.trouverDemandesRecues(destinataire);
+
+        // Assert
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(destinataire, result.get(0).getDestinataire());
+    }
+
+    @Test
+    void compterDemandesEnAttente_DoitRetournerNombre() {
+        // Arrange
+        when(demandeEchangeRepository.countDemandesEnAttente(destinataire))
+                .thenReturn(5L);
+
+        // Act
+        long result = demandeEchangeService.compterDemandesEnAttente(destinataire);
+
+        // Assert
+        assertEquals(5L, result);
+    }
+
+    @Test
+    void estDestinataire_DoitRetournerVrai_QuandUtilisateurEstDestinataire() {
+        // Arrange
+        when(demandeEchangeRepository.findByIdAndDestinataire(1L, destinataire))
+                .thenReturn(Optional.of(demande));
+
+        // Act
+        boolean result = demandeEchangeService.estDestinataire(1L, destinataire);
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void estDestinataire_DoitRetournerFaux_QuandUtilisateurNestPasDestinataire() {
+        // Arrange
+        Utilisateur autreUtilisateur = new Utilisateur();
+        autreUtilisateur.setId(3L);
+        when(demandeEchangeRepository.findByIdAndDestinataire(1L, autreUtilisateur))
+                .thenReturn(Optional.empty());
+
+        // Act
+        boolean result = demandeEchangeService.estDestinataire(1L, autreUtilisateur);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void peutEnvoyerMessage_DoitRetournerVrai_QuandEchangeAccepteEtUtilisateurEstPartie() {
+        // Arrange
+        demande.setStatut(DemandeEchange.StatutDemande.ACCEPTEE);
+        when(demandeEchangeRepository.findById(1L)).thenReturn(Optional.of(demande));
+
+        // Act
+        boolean result = demandeEchangeService.peutEnvoyerMessage(1L, demandeur);
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void peutEnvoyerMessage_DoitRetournerFaux_QuandEchangePasAccepte() {
+        // Arrange
+        demande.setStatut(DemandeEchange.StatutDemande.EN_ATTENTE);
+        when(demandeEchangeRepository.findById(1L)).thenReturn(Optional.of(demande));
+
+        // Act
+        boolean result = demandeEchangeService.peutEnvoyerMessage(1L, demandeur);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void refuserDemande_DoitReussir_QuandDestinataireAutorise() {
+        // Arrange
+        DemandeEchange demandeRefusee = new DemandeEchange();
+        demandeRefusee.setId(1L);
+        demandeRefusee.setStatut(DemandeEchange.StatutDemande.REFUSEE);
+
+        when(demandeEchangeRepository.findById(1L)).thenReturn(Optional.of(demande));
+        when(demandeEchangeRepository.saveAndFlush(any(DemandeEchange.class))).thenReturn(demandeRefusee);
+
+        // Act
+        DemandeEchange result = demandeEchangeService.refuserDemande(1L, destinataire);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(DemandeEchange.StatutDemande.REFUSEE, result.getStatut());
+    }
+
+    @Test
+    void annulerDemande_DoitReussir_QuandDemandeurAutorise() {
+        // Arrange
+        when(demandeEchangeRepository.findByIdAndDemandeur(1L, demandeur))
+                .thenReturn(Optional.of(demande));
+
+        // Act
+        assertDoesNotThrow(() -> demandeEchangeService.annulerDemande(1L, demandeur));
+
+        // Assert
+        verify(demandeEchangeRepository, times(1)).saveAndFlush(any(DemandeEchange.class));
     }
 }

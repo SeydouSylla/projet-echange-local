@@ -15,16 +15,25 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UtilisateurRepository utilisateurRepository;
 
+    /*
+      Constructeur pour l'injection de dépendance du repository utilisateur
+      @param utilisateurRepository Repository pour la gestion des utilisateurs
+     */
     @Autowired
     public CustomUserDetailsService(UtilisateurRepository utilisateurRepository) {
         this.utilisateurRepository = utilisateurRepository;
     }
 
+    /*
+      Charge les détails d'un utilisateur par son email pour l'authentification Spring Security
+     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Recherche de l'utilisateur par email dans la base de données
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec l'email : " + email));
 
+        // Construction de l'objet UserDetails Spring Security à partir des données de l'utilisateur
         return User.builder()
                 .username(utilisateur.getEmail())
                 .password(utilisateur.getMotDePasse())

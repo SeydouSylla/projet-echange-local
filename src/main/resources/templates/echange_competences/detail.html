@@ -200,15 +200,28 @@
                         </div>
                     </th:block>
 
+                    <!-- Afficher le bouton seulement si pas propriétaire ET compétence disponible -->
                     <th:block th:unless="${estProprietaire}">
                         <div class="d-grid gap-2">
-                            <a th:href="@{/echanges/demander/competence/{id}(id=${competence.id})}"
-                               class="btn btn-primary">
-                                <i class="fas fa-exchange-alt me-1"></i>Faire une demande d'échange
-                            </a>
-                            <a href="#" class="btn btn-outline-secondary">
-                                <i class="fas fa-heart me-1"></i>Ajouter aux favoris
-                            </a>
+                            <!-- Vérifier si la compétence est disponible -->
+                            <th:block th:if="${competence.disponible}">
+                                <a th:href="@{/echanges/demander/competence/{id}(id=${competence.id})}"
+                                   class="btn btn-primary">
+                                    <i class="fas fa-exchange-alt me-1"></i>Faire une demande d'échange
+                                </a>
+                            </th:block>
+                            <!-- Si la compétence n'est pas disponible -->
+                            <th:block th:unless="${competence.disponible}">
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-ban me-1"></i>Compétence indisponible
+                                </button>
+                                <div class="alert alert-warning mt-2 mb-0">
+                                    <small>
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Cette compétence est actuellement en échange avec un autre utilisateur.
+                                    </small>
+                                </div>
+                            </th:block>
                         </div>
                     </th:block>
                 </div>
@@ -237,28 +250,6 @@
                         </li>
                     </ul>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de contact -->
-<div class="modal fade" id="contactModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Contacter <span th:text="${competence.createurNom}"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Fonctionnalité de messagerie à venir dans la prochaine version.</p>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Vous pourrez bientôt envoyer des messages directement à cette personne.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
