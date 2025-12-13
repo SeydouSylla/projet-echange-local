@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository pour l'accès aux données des compétences.
- * Pattern REPOSITORY - Abstraction de l'accès aux données.
+  Repository pour l'accès aux données des compétences.
+  Abstraction de l'accès aux données.
  */
 @Repository
 public interface CompetenceRepository extends JpaRepository<Competence, Long> {

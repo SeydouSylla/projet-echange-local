@@ -19,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/*
+  Implémentation du service de gestion des demandes d'échange
+  Respecte les principes SOLID et l'architecture en couches
+ */
 @Service
 @Transactional
 public class DemandeEchangeServiceImpl implements DemandeEchangeService {
@@ -28,6 +32,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
     private final AnnonceRepository annonceRepository;
     private final CompetenceRepository competenceRepository;
 
+    // Constructeur injectant les repositories nécessaires à la gestion des demandes d'échange
     @Autowired
     public DemandeEchangeServiceImpl(DemandeEchangeRepository demandeEchangeRepository,
                                      MessageRepository messageRepository,
@@ -41,6 +46,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
 
     // ============ IMPLÉMENTATION DES MÉTHODES ============
 
+    // Crée une nouvelle demande d'échange après validation des données
     @Override
     public DemandeEchange creerDemandeEchange(DemandeEchangeDto demandeDto, Utilisateur demandeur) {
         validerDemandeEchangeDto(demandeDto);
@@ -67,11 +73,11 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
             throw new IllegalArgumentException("Une annonce ou une compétence doit être spécifiée");
         }
 
-        // CORRECTION: Sauvegarder et flusher immédiatement
         DemandeEchange demandeSaved = demandeEchangeRepository.saveAndFlush(demande);
         return demandeSaved;
     }
 
+    // Accepte une demande d'échange si elle est en attente et autorisée
     @Override
     public DemandeEchange accepterDemande(Long demandeId, Utilisateur destinataire) {
         DemandeEchange demande = trouverDemandeAvecVerification(demandeId, destinataire);
@@ -91,10 +97,10 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
             demande.getCompetence().setDisponible(false);
         }
 
-        // CORRECTION: Sauvegarder et flusher
         return demandeEchangeRepository.saveAndFlush(demande);
     }
 
+    // Refuse une demande d'échange si elle est encore en attente
     @Override
     public DemandeEchange refuserDemande(Long demandeId, Utilisateur destinataire) {
         DemandeEchange demande = trouverDemandeAvecVerification(demandeId, destinataire);
@@ -107,6 +113,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         return demandeEchangeRepository.saveAndFlush(demande);
     }
 
+    // Annule une demande d'échange par le demandeur tant qu'elle est en attente
     @Override
     public void annulerDemande(Long demandeId, Utilisateur demandeur) {
         DemandeEchange demande = demandeEchangeRepository.findByIdAndDemandeur(demandeId, demandeur)
@@ -120,6 +127,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         demandeEchangeRepository.saveAndFlush(demande);
     }
 
+    // Envoie un message dans le cadre d'une demande d'échange acceptée
     @Override
     public Message envoyerMessage(MessageDto messageDto, Utilisateur expediteur) {
         validerMessageDto(messageDto);
@@ -148,30 +156,35 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         return messageRepository.saveAndFlush(message);
     }
 
+    // Recherche une demande d'échange par son identifiant
     @Override
     @Transactional(readOnly = true)
     public Optional<DemandeEchange> trouverParId(Long id) {
         return demandeEchangeRepository.findById(id);
     }
 
+    // Recherche une demande d'échange avec ses messages associés
     @Override
     @Transactional(readOnly = true)
     public Optional<DemandeEchange> trouverParIdAvecMessages(Long id) {
         return demandeEchangeRepository.findByIdWithMessages(id);
     }
 
+    // Récupère la liste des demandes envoyées par un utilisateur
     @Override
     @Transactional(readOnly = true)
     public List<DemandeEchange> trouverDemandesEnvoyees(Utilisateur utilisateur) {
         return demandeEchangeRepository.findByDemandeurOrderByDateCreationDesc(utilisateur);
     }
 
+    // Récupère la liste des demandes reçues par un utilisateur
     @Override
     @Transactional(readOnly = true)
     public List<DemandeEchange> trouverDemandesRecues(Utilisateur utilisateur) {
         return demandeEchangeRepository.findByDestinataireOrderByDateCreationDesc(utilisateur);
     }
 
+    // Récupère les demandes reçues par statut avec pagination
     @Override
     @Transactional(readOnly = true)
     public Page<DemandeEchange> trouverDemandesRecuesParStatut(Utilisateur utilisateur,
@@ -180,30 +193,49 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         return demandeEchangeRepository.findByDestinataireAndStatut(utilisateur, statut, pageable);
     }
 
+    // Récupère les échanges actifs d'un utilisateur
     @Override
     @Transactional(readOnly = true)
     public List<DemandeEchange> trouverEchangesActifs(Utilisateur utilisateur) {
         return demandeEchangeRepository.findEchangesActifs(utilisateur);
     }
 
+    // Récupère les échanges terminés d'un utilisateur
+    @Override
+    @Transactional(readOnly = true)
+    public List<DemandeEchange> trouverEchangesTermines(Utilisateur utilisateur) {
+        return demandeEchangeRepository.findEchangesTermines(utilisateur);
+    }
+
+    // Récupère les échanges terminés avec pagination
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DemandeEchange> trouverEchangesTerminesPage(Utilisateur utilisateur, Pageable pageable) {
+        return demandeEchangeRepository.findEchangesTerminesPage(utilisateur, pageable);
+    }
+
+    // Compte le nombre de demandes en attente reçues par un utilisateur
     @Override
     @Transactional(readOnly = true)
     public long compterDemandesEnAttente(Utilisateur utilisateur) {
         return demandeEchangeRepository.countDemandesEnAttente(utilisateur);
     }
 
+    // Vérifie si l'utilisateur est le destinataire de la demande
     @Override
     @Transactional(readOnly = true)
     public boolean estDestinataire(Long demandeId, Utilisateur utilisateur) {
         return demandeEchangeRepository.findByIdAndDestinataire(demandeId, utilisateur).isPresent();
     }
 
+    // Vérifie si l'utilisateur est le demandeur de la demande
     @Override
     @Transactional(readOnly = true)
     public boolean estDemandeur(Long demandeId, Utilisateur utilisateur) {
         return demandeEchangeRepository.findByIdAndDemandeur(demandeId, utilisateur).isPresent();
     }
 
+    // Vérifie si l'utilisateur peut envoyer un message pour cette demande
     @Override
     @Transactional(readOnly = true)
     public boolean peutEnvoyerMessage(Long demandeId, Utilisateur utilisateur) {
@@ -217,18 +249,35 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
                 (utilisateur.equals(demande.getDemandeur()) || utilisateur.equals(demande.getDestinataire()));
     }
 
+    // Vérifie si l'utilisateur peut consulter l'historique de la demande
+    @Override
+    @Transactional(readOnly = true)
+    public boolean peutConsulterHistorique(Long demandeId, Utilisateur utilisateur) {
+        Optional<DemandeEchange> demandeOpt = demandeEchangeRepository.findById(demandeId);
+        if (demandeOpt.isEmpty()) {
+            return false;
+        }
+
+        DemandeEchange demande = demandeOpt.get();
+        // L'utilisateur peut consulter si c'est un participant (demandeur ou destinataire)
+        return utilisateur.equals(demande.getDemandeur()) || utilisateur.equals(demande.getDestinataire());
+    }
+
+    // Récupère les demandes reçues avec pagination
     @Override
     @Transactional(readOnly = true)
     public Page<DemandeEchange> trouverDemandesRecuesPage(Utilisateur utilisateur, Pageable pageable) {
         return demandeEchangeRepository.findByDestinataire(utilisateur, pageable);
     }
 
+    // Récupère les demandes envoyées avec pagination
     @Override
     @Transactional(readOnly = true)
     public Page<DemandeEchange> trouverDemandesEnvoyeesPage(Utilisateur utilisateur, Pageable pageable) {
         return demandeEchangeRepository.findByDemandeur(utilisateur, pageable);
     }
 
+    // Récupère les demandes envoyées par statut avec pagination
     @Override
     @Transactional(readOnly = true)
     public Page<DemandeEchange> trouverDemandesEnvoyeesParStatut(Utilisateur utilisateur,
@@ -237,26 +286,28 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         return demandeEchangeRepository.findByDemandeurAndStatut(utilisateur, statut, pageable);
     }
 
-    // ============ NOUVELLES MÉTHODES POUR LES STATISTIQUES ============
-
+    // Compte les demandes reçues par statut
     @Override
     @Transactional(readOnly = true)
     public long compterDemandesRecuesParStatut(Utilisateur utilisateur, DemandeEchange.StatutDemande statut) {
         return demandeEchangeRepository.countByDestinataireAndStatut(utilisateur, statut);
     }
 
+    // Compte toutes les demandes reçues par un utilisateur
     @Override
     @Transactional(readOnly = true)
     public long compterToutesDemandesRecues(Utilisateur utilisateur) {
         return demandeEchangeRepository.countByDestinataire(utilisateur);
     }
 
+    // Compte les demandes envoyées par statut
     @Override
     @Transactional(readOnly = true)
     public long compterDemandesEnvoyeesParStatut(Utilisateur utilisateur, DemandeEchange.StatutDemande statut) {
         return demandeEchangeRepository.countByDemandeurAndStatut(utilisateur, statut);
     }
 
+    // Compte toutes les demandes envoyées par un utilisateur
     @Override
     @Transactional(readOnly = true)
     public long compterToutesDemandesEnvoyees(Utilisateur utilisateur) {
@@ -265,6 +316,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
 
     // ============ MÉTHODES PRIVÉES UTILITAIRES ============
 
+    // Valide les données du DTO de demande d'échange
     private void validerDemandeEchangeDto(DemandeEchangeDto demandeDto) {
         if (demandeDto == null) {
             throw new IllegalArgumentException("La demande d'échange ne peut pas être nulle");
@@ -277,6 +329,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         }
     }
 
+    // Valide les données du DTO de message
     private void validerMessageDto(MessageDto messageDto) {
         if (messageDto == null) {
             throw new IllegalArgumentException("Le message ne peut pas être nul");
@@ -286,6 +339,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         }
     }
 
+    // Vérifie qu'une annonce est valide pour une demande d'échange
     private void validerAnnoncePourDemande(Annonce annonce, Utilisateur demandeur) {
         if (!annonce.isDisponible()) {
             throw new IllegalArgumentException("Cette annonce n'est pas disponible");
@@ -295,6 +349,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         }
     }
 
+    // Vérifie qu'une compétence est valide pour une demande d'échange
     private void validerCompetencePourDemande(Competence competence, Utilisateur demandeur) {
         if (!competence.isDisponible()) {
             throw new IllegalArgumentException("Cette compétence n'est pas disponible");
@@ -304,6 +359,7 @@ public class DemandeEchangeServiceImpl implements DemandeEchangeService {
         }
     }
 
+    // Recherche une demande d'échange et vérifie que l'utilisateur est le destinataire
     private DemandeEchange trouverDemandeAvecVerification(Long demandeId, Utilisateur destinataire) {
         DemandeEchange demande = demandeEchangeRepository.findById(demandeId)
                 .orElseThrow(() -> new DemandeEchangeNonTrouveeException("Demande d'échange non trouvée"));

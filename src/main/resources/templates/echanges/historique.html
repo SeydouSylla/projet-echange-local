@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des échanges - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/echanges.css}" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2 pulse"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <li class="nav-item"><a class="nav-link" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
+                            <span th:text="${session.utilisateur.prenom}"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <a class="dropdown-item active" href="/echanges/historique"><i class="fas fa-history me-2"></i>Historique</a>
+                            <a class="dropdown-item" href="/avis/mes-avis"><i class="fas fa-star me-2"></i>Mes avis</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-history me-2"></i>Historique des échanges terminés</h1>
+        <a href="/echanges/mes-demandes" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Retour aux échanges
+        </a>
+    </div>
+
+    <th:block th:if="${echangesPage != null && echangesPage.totalElements > 0}">
+        <div class="row">
+            <th:block th:each="echange : ${echangesPage.content}">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-check-circle me-2"></i>Échange terminé</span>
+                                <span class="badge bg-light text-success">
+                                    <i class="far fa-calendar me-1"></i>
+                                    <span th:text="${#temporals.format(echange.dateCreation, 'dd/MM/yyyy')}"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Informations sur l'objet/compétence -->
+                            <h5 class="card-title mb-3">
+                                <th:block th:if="${echange.annonce != null}">
+                                    <i class="fas fa-box me-2 text-primary"></i>
+                                    <a th:href="@{/annonces/{id}(id=${echange.annonce.id})}"
+                                       th:text="${echange.annonce.titre}"></a>
+                                </th:block>
+                                <th:block th:if="${echange.competence != null}">
+                                    <i class="fas fa-hands-helping me-2 text-success"></i>
+                                    <a th:href="@{/competences/{id}(id=${echange.competence.id})}"
+                                       th:text="${echange.competence.titre}"></a>
+                                </th:block>
+                            </h5>
+
+                            <!-- Participant -->
+                            <div class="mb-3">
+                                <strong>Échange avec :</strong>
+                                <th:block th:if="${utilisateur.id == echange.demandeur.id}">
+                                    <span th:text="${echange.destinataire.prenom + ' ' + echange.destinataire.nom}"></span>
+                                </th:block>
+                                <th:block th:if="${utilisateur.id == echange.destinataire.id}">
+                                    <span th:text="${echange.demandeur.prenom + ' ' + echange.demandeur.nom}"></span>
+                                </th:block>
+                            </div>
+
+                            <!-- Proposition d'échange -->
+                            <div class="mb-3">
+                                <strong>Proposition :</strong>
+                                <p class="text-muted mb-0" th:text="${echange.propositionEchange}"></p>
+                            </div>
+
+                            <!-- Date de l'échange -->
+                            <div class="mb-3">
+                                <strong>Date proposée :</strong>
+                                <span th:text="${#temporals.format(echange.dateProposee, 'dd/MM/yyyy à HH:mm')}"></span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/echanges/messagerie/{id}(id=${echange.id})}"
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-history me-1"></i>Consulter l'historique des messages
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${echangesPage.totalPages > 1}" aria-label="Pagination de l'historique">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/echanges/historique(page=${currentPage - 1})}">
+                        <i class="fas fa-angle-left"></i> Précédent
+                    </a>
+                </li>
+
+                <li class="page-item"
+                    th:each="page : ${#numbers.sequence(0, echangesPage.totalPages - 1)}"
+                    th:classappend="${page == currentPage} ? 'active' : ''">
+                    <a class="page-link" th:href="@{/echanges/historique(page=${page})}" th:text="${page + 1}">1</a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage == echangesPage.totalPages - 1} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/echanges/historique(page=${currentPage + 1})}">
+                        Suivant <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </th:block>
+
+    <th:block th:unless="${echangesPage != null && echangesPage.totalElements > 0}">
+        <div class="text-center py-5">
+            <i class="fas fa-history fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Aucun échange terminé pour le moment</h5>
+            <p class="text-muted">Vos échanges complétés avec avis mutuels apparaîtront ici.</p>
+            <a href="/echanges/mes-demandes" class="btn btn-primary">
+                <i class="fas fa-exchange-alt me-1"></i>Voir mes échanges en cours
+            </a>
+        </div>
+    </th:block>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Implémentation du service de gestion des compétences.
- * Pattern SERVICE LAYER - Logique métier centralisée.
+  Implémentation du service de gestion des compétences.
+  Pattern SERVICE LAYER - Logique métier centralisée.
  */
 @Service
 @Transactional

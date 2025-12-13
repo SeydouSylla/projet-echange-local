@@ -6,43 +6,7 @@
     <title>Accueil - Échange Local</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #3498db;
-            --primary-dark: #2980b9;
-            --secondary-color: #2ecc71;
-            --dark-color: #2c3e50;
-            --light-color: #ecf0f1;
-            --gray-light: #f8f9fa;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-color); color: #333; line-height: 1.6; }
-        .navbar { background: linear-gradient(135deg, var(--dark-color), #1a252f); box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 0.8rem 0; }
-        .navbar-brand { font-weight: 700; font-size: 1.5rem; color: white !important; }
-        .navbar-brand i { color: var(--secondary-color); animation: pulse 2s infinite; }
-        .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 500; padding: 0.5rem 1rem !important; border-radius: 4px; transition: all 0.3s ease; margin: 0 2px; }
-        .nav-link:hover, .nav-link.active { background-color: rgba(255,255,255,0.1); color: white !important; transform: translateY(-2px); }
-        .dropdown-menu { border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 8px; padding: 0.5rem; }
-        .dropdown-item { padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.2s ease; }
-        .dropdown-item:hover { background-color: var(--primary-color); color: white; }
-        .hero-section { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 4rem 0; margin-bottom: 3rem; border-radius: 0 0 30px 30px; }
-        .hero-title { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
-        .hero-subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; }
-        .feature-card { background: white; border-radius: 12px; padding: 2rem; height: 100%; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e1e8ed; }
-        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .feature-card i { font-size: 2.5rem; margin-bottom: 1rem; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: none; padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
-        .btn-success { background: linear-gradient(135deg, var(--secondary-color), #27ae60); border: none; padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
-        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4); }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .pulse { animation: pulse 2s infinite; }
-        .section-title { color: var(--dark-color); font-weight: 700; margin-bottom: 2rem; position: relative; padding-bottom: 0.5rem; }
-        .section-title:after { content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: var(--primary-color); border-radius: 2px; }
-        .footer { background: var(--dark-color); color: white; padding: 3rem 0; margin-top: 4rem; }
-        .footer-links a { color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 1rem; transition: color 0.3s ease; }
-        .footer-links a:hover { color: white; }
-        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .navbar-nav { background: rgba(44, 62, 80, 0.95); padding: 1rem; border-radius: 8px; margin-top: 1rem; } }
-    </style>
+    <link rel="stylesheet" href="/css/accueil.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark">
@@ -55,7 +19,7 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link active" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
                 <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
                 <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
                 <th:block th:if="${session.utilisateur != null}">
@@ -65,9 +29,9 @@
             <ul class="navbar-nav ms-auto">
                 <th:block th:if="${session.utilisateur != null}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button">
                             <th:block th:if="${session.utilisateur.photoProfil}">
-                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo profil">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo">
                             </th:block>
                             <th:block th:unless="${session.utilisateur.photoProfil}">
                                 <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
@@ -78,8 +42,8 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
                             <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
-                            <a class="dropdown-item" href="/annonces/mes-annonces"><i class="fas fa-box me-2"></i>Mes objets</a>
-                            <a class="dropdown-item" href="/competences/mes-competences"><i class="fas fa-hands-helping me-2"></i>Mes compétences</a>
+                            <a class="dropdown-item" href="/avis/mes-avis"><i class="fas fa-star me-2"></i>Mes avis</a>
+                            <a class="dropdown-item active" href="/avis/tous"><i class="fas fa-globe me-2"></i>Tous les avis</a>
                             <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
@@ -146,6 +110,37 @@
         </div>
     </div>
 
+    <!-- Nouvelle section : Système de réputation -->
+    <div class="row mb-5">
+        <div class="col-12"><h3 class="section-title">Une communauté de confiance</h3></div>
+        <div class="col-md-6 mb-4">
+            <div class="feature-card">
+                <i class="fas fa-star text-warning"></i>
+                <h4>Système d'avis et de réputation</h4>
+                <p>Après chaque échange, partagez votre expérience en laissant un avis. Consultez les avis des autres membres pour échanger en toute confiance.</p>
+                <ul class="list-unstyled mt-3">
+                    <li><i class="fas fa-check text-success me-2"></i>Notes de 1 à 5 étoiles</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Commentaires détaillés</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Statistiques de satisfaction</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Profils vérifiés</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="feature-card">
+                <i class="fas fa-shield-alt text-success"></i>
+                <h4>Sécurité et transparence</h4>
+                <p>Chaque membre construit sa réputation au fil des échanges, garantissant une communauté sûre et responsable.</p>
+                <ul class="list-unstyled mt-3">
+                    <li><i class="fas fa-check text-success me-2"></i>Historique complet des échanges</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Avis authentiques et modérables</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Taux de satisfaction visible</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Communauté auto-régulée</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- CTA Final -->
     <div class="row mb-5">
         <div class="col-12">
@@ -165,43 +160,11 @@
     </div>
 </div>
 
-<footer class="footer">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <h4 class="mb-3"><i class="fas fa-exchange-alt me-2"></i>Échange Local</h4>
-                <p class="text-muted">Une plateforme communautaire pour partager objets et compétences entre voisins, favorisant une consommation responsable et des liens sociaux.</p>
-            </div>
-            <div class="col-lg-2 mb-4">
-                <h5 class="mb-3">Navigation</h5>
-                <div class="footer-links d-flex flex-column">
-                    <a href="/accueil">Accueil</a>
-                    <a href="/annonces/liste">Objets</a>
-                    <a href="/competences/liste">Compétences</a>
-                    <a href="/propos">À propos</a>
-                </div>
-            </div>
-            <div class="col-lg-3 mb-4">
-                <h5 class="mb-3">Pour les membres</h5>
-                <div class="footer-links d-flex flex-column">
-                    <a href="/profil">Mon profil</a>
-                    <a href="/annonces/mes-annonces">Mes objets</a>
-                    <a href="/competences/mes-competences">Mes compétences</a>
-                    <a href="/echanges/mes-demandes">Mes échanges</a>
-                </div>
-            </div>
-            <div class="col-lg-3 mb-4">
-                <h5 class="mb-3">Contact</h5>
-                <div class="text-muted">
-                    <p><i class="fas fa-envelope me-2"></i>contact@echangelocal.fr</p>
-                    <p><i class="fas fa-shield-alt me-2"></i>Plateforme sécurisée</p>
-                </div>
-            </div>
-        </div>
-        <hr class="my-4 opacity-25">
-        <div class="text-center">
-            <p class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Échange Local © 2024 - Développé avec <i class="fas fa-heart text-danger mx-1"></i> pour des communautés plus solidaires</p>
-        </div>
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
     </div>
 </footer>
 

@@ -1,8 +1,8 @@
 package echangelocal.exception;
 
 /**
- * Exception levée lorsqu'une compétence n'est pas trouvée.
- * Pattern CUSTOM EXCEPTION - Gestion métier des erreurs.
+  Exception levée lorsqu'une compétence n'est pas trouvée.
+  Gestion métier des erreurs.
  */
 public class CompetenceNonTrouveeException extends RuntimeException {
 

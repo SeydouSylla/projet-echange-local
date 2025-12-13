@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes avis - Échange Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/avis.css}" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/accueil">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/accueil"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="/annonces/liste"><i class="fas fa-box me-1"></i>Objets</a></li>
+                <li class="nav-item"><a class="nav-link" href="/competences/liste"><i class="fas fa-hands-helping me-1"></i>Compétences</a></li>
+                <li class="nav-item"><a class="nav-link" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-1"></i>Mes échanges</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <th:block th:if="${session.utilisateur != null}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button">
+                            <th:block th:if="${session.utilisateur.photoProfil}">
+                                <img th:src="@{'/uploads/profils/' + ${session.utilisateur.photoProfil}}" class="rounded-circle me-2" width="32" height="32" alt="Photo">
+                            </th:block>
+                            <th:block th:unless="${session.utilisateur.photoProfil}">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                            </th:block>
+                            <span th:text="${session.utilisateur.prenom}"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="/profil"><i class="fas fa-user me-2"></i>Mon profil</a>
+                            <a class="dropdown-item active" href="/avis/mes-avis"><i class="fas fa-star me-2"></i>Mes avis</a>
+                            <a class="dropdown-item" href="/echanges/mes-demandes"><i class="fas fa-exchange-alt me-2"></i>Mes échanges</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/deconnexion"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a>
+                        </div>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- En-tête -->
+    <h1 class="mb-4">
+        <i class="fas fa-star text-warning me-2"></i>Ma réputation
+    </h1>
+
+    <!-- Statistiques de réputation -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center reputation-card">
+                <div class="card-body">
+                    <div class="reputation-score" th:text="${statistiques.noteMoyenne}">0.0</div>
+                    <div class="stars-display">
+                        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                            <i class="fas fa-star"
+                               th:classappend="${i <= statistiques.noteMoyenne} ? 'text-warning' : 'text-muted'"></i>
+                        </th:block>
+                    </div>
+                    <p class="text-muted mb-0 small">Note moyenne</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary" th:text="${statistiques.totalAvis}">0</h3>
+                    <p class="text-muted mb-0">Avis reçus</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success" th:text="${statistiques.tauxSatisfaction + '%'}">0%</h3>
+                    <p class="text-muted mb-0">Taux de satisfaction</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info" th:text="${avisDonnes != null ? avisDonnes.size() : 0}">0</h3>
+                    <p class="text-muted mb-0">Avis donnés</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition des notes -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Répartition des notes</h5>
+        </div>
+        <div class="card-body">
+            <th:block th:each="note : ${#numbers.sequence(5, 1, -1)}">
+                <div class="rating-bar-container mb-3">
+                    <div class="rating-bar-label">
+                        <span th:text="${note}">5</span>
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <div class="progress rating-bar-progress">
+                        <div class="progress-bar bg-warning"
+                             role="progressbar"
+                             th:style="'width: ' + ${statistiques.totalAvis > 0 ? ((statistiques.repartitionNotes[note] ?: 0) * 100 / statistiques.totalAvis) : 0} + '%'"
+                             th:attr="aria-valuenow=${statistiques.repartitionNotes[note] ?: 0}, aria-valuemax=${statistiques.totalAvis}">
+                        </div>
+                    </div>
+                    <div class="rating-bar-count">
+                        <span th:text="${statistiques.repartitionNotes[note]}">0</span>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <ul class="nav nav-tabs mb-4" id="avisTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="recus-tab" data-bs-toggle="tab" data-bs-target="#recus" type="button">
+                <i class="fas fa-inbox me-2"></i>Avis reçus
+                <span class="badge bg-primary ms-2" th:text="${statistiques.totalAvis}">0</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="donnes-tab" data-bs-toggle="tab" data-bs-target="#donnes" type="button">
+                <i class="fas fa-paper-plane me-2"></i>Avis donnés
+                <span class="badge bg-secondary ms-2" th:text="${avisDonnes != null ? avisDonnes.size() : 0}">0</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="avisTabContent">
+        <!-- Avis reçus -->
+        <div class="tab-pane fade show active" id="recus" role="tabpanel">
+            <th:block th:if="${avisRecusPage != null && avisRecusPage.totalElements > 0}">
+                <th:block th:each="avis : ${avisRecusPage.content}">
+                    <div class="card avis-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <th:block th:if="${avis.evaluateur.photoProfil}">
+                                        <img th:src="@{'/uploads/profils/' + ${avis.evaluateur.photoProfil}}"
+                                             class="rounded-circle me-3" width="50" height="50" alt="Photo">
+                                    </th:block>
+                                    <th:block th:unless="${avis.evaluateur.photoProfil}">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3"
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-user fa-lg text-muted"></i>
+                                        </div>
+                                    </th:block>
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a th:href="@{/avis/utilisateur/{id}(id=${avis.evaluateur.id})}"
+                                               class="text-decoration-none"
+                                               th:text="${avis.evaluateur.prenom + ' ' + avis.evaluateur.nom}"></a>
+                                        </h6>
+                                        <div class="stars-small">
+                                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <i class="fas fa-star"
+                                                   th:classappend="${i <= avis.note} ? 'text-warning' : 'text-muted'"></i>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(avis.dateCreation, 'dd/MM/yyyy')}"></span>
+                                </small>
+                            </div>
+
+                            <p class="mb-2" th:text="${avis.commentaire}">Commentaire</p>
+
+                            <div class="small text-muted">
+                                <strong>Échange :</strong>
+                                <th:block th:if="${avis.demandeEchange.annonce != null}">
+                                    <a th:href="@{/annonces/{id}(id=${avis.demandeEchange.annonce.id})}"
+                                       class="text-decoration-none"
+                                       th:text="${avis.demandeEchange.annonce.titre}"></a>
+                                    <span class="badge bg-primary ms-2">
+                                        <i class="fas fa-box me-1"></i>Objet
+                                    </span>
+                                </th:block>
+                                <th:block th:if="${avis.demandeEchange.competence != null}">
+                                    <a th:href="@{/competences/{id}(id=${avis.demandeEchange.competence.id})}"
+                                       class="text-decoration-none"
+                                       th:text="${avis.demandeEchange.competence.titre}"></a>
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-hands-helping me-1"></i>Compétence
+                                    </span>
+                                </th:block>
+                            </div>
+
+                            <!-- Information sur le contre-échange -->
+                            <div class="small text-muted mt-2">
+                                <strong>Contre-échange proposé :</strong>
+                                <span th:text="${avis.demandeEchange.propositionEchange}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- Pagination -->
+                <nav th:if="${avisRecusPage.totalPages > 1}" aria-label="Pagination des avis">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                            <a class="page-link" th:href="@{/avis/mes-avis(page=${currentPage - 1})}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:each="page : ${#numbers.sequence(0, avisRecusPage.totalPages - 1)}"
+                            th:classappend="${page == currentPage} ? 'active' : ''">
+                            <a class="page-link" th:href="@{/avis/mes-avis(page=${page})}" th:text="${page + 1}">1</a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${currentPage == avisRecusPage.totalPages - 1} ? 'disabled' : ''">
+                            <a class="page-link" th:href="@{/avis/mes-avis(page=${currentPage + 1})}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </th:block>
+
+            <th:block th:unless="${avisRecusPage != null && avisRecusPage.totalElements > 0}">
+                <div class="text-center py-5">
+                    <i class="fas fa-star fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun avis reçu pour le moment</h5>
+                    <p class="text-muted">Réalisez des échanges pour commencer à recevoir des avis !</p>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Avis donnés -->
+        <div class="tab-pane fade" id="donnes" role="tabpanel">
+            <th:block th:if="${avisDonnes != null && !avisDonnes.isEmpty()}">
+                <th:block th:each="avis : ${avisDonnes}">
+                    <div class="card avis-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            Avis pour
+                                            <span th:text="${avis.evalue.prenom + ' ' + avis.evalue.nom}">Nom</span>
+                                        </h6>
+                                        <div class="stars-small">
+                                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <i class="fas fa-star"
+                                                   th:classappend="${i <= avis.note} ? 'text-warning' : 'text-muted'"></i>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="far fa-clock me-1"></i>
+                                        <span th:text="${#temporals.format(avis.dateCreation, 'dd/MM/yyyy')}"></span>
+                                    </small>
+                                    <th:block th:if="${avis.peutEtreModifie()}">
+                                        <a th:href="@{/avis/modifier/{id}(id=${avis.id})}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                    </th:block>
+                                </div>
+                            </div>
+
+                            <p class="mb-2" th:text="${avis.commentaire}">Commentaire</p>
+
+                            <div class="small text-muted">
+                                <strong>Échange :</strong>
+                                <th:block th:if="${avis.demandeEchange.annonce != null}">
+                                    <a th:href="@{/annonces/{id}(id=${avis.demandeEchange.annonce.id})}"
+                                       class="text-decoration-none"
+                                       th:text="${avis.demandeEchange.annonce.titre}"></a>
+                                    <span class="badge bg-primary ms-2">
+                                        <i class="fas fa-box me-1"></i>Objet
+                                    </span>
+                                </th:block>
+                                <th:block th:if="${avis.demandeEchange.competence != null}">
+                                    <a th:href="@{/competences/{id}(id=${avis.demandeEchange.competence.id})}"
+                                       class="text-decoration-none"
+                                       th:text="${avis.demandeEchange.competence.titre}"></a>
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-hands-helping me-1"></i>Compétence
+                                    </span>
+                                </th:block>
+                            </div>
+
+                            <!-- Information sur le contre-échange -->
+                            <div class="small text-muted mt-2">
+                                <strong>Contre-échange proposé :</strong>
+                                <span th:text="${avis.demandeEchange.propositionEchange}"></span>
+                            </div>
+
+                            <!-- Actions supplémentaires -->
+                            <div class="mt-3 pt-2 border-top">
+                                <small class="text-muted">
+                                    <th:block th:if="${avis.visible}">
+                                        <i class="fas fa-eye text-success me-1"></i>Visible publiquement
+                                    </th:block>
+                                    <th:block th:unless="${avis.visible}">
+                                        <i class="fas fa-eye-slash text-muted me-1"></i>Masqué
+                                    </th:block>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </th:block>
+
+            <th:block th:unless="${avisDonnes != null && !avisDonnes.isEmpty()}">
+                <div class="text-center py-5">
+                    <i class="fas fa-comment-dots fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Vous n'avez pas encore donné d'avis</h5>
+                    <p class="text-muted">Après vos échanges, n'hésitez pas à laisser des avis constructifs !</p>
+                    <a href="/echanges/mes-demandes" class="btn btn-primary">
+                        <i class="fas fa-exchange-alt me-1"></i>Voir mes échanges
+                    </a>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center">
+        <p class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Échange Local - Développé avec Spring Boot & Bootstrap
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

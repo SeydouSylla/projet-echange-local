@@ -24,6 +24,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/*
+  Contrôleur pour la gestion des demandes d'échange
+  Respecte le pattern MVC et la séparation des responsabilités
+ */
 @Controller
 @RequestMapping("/echanges")
 public class DemandeEchangeController {
@@ -139,7 +143,6 @@ public class DemandeEchangeController {
             redirectAttributes.addFlashAttribute("success",
                     "Votre demande d'échange a été envoyée avec succès !");
 
-            // CORRECTION: Rediriger vers la page des demandes envoyées pour voir immédiatement
             return "redirect:/echanges/demandes-envoyees";
 
         } catch (SecurityException e) {
@@ -160,12 +163,14 @@ public class DemandeEchangeController {
             List<DemandeEchange> demandesRecues = demandeEchangeService.trouverDemandesRecues(utilisateur);
             long demandesEnAttente = demandeEchangeService.compterDemandesEnAttente(utilisateur);
             List<DemandeEchange> echangesActifs = demandeEchangeService.trouverEchangesActifs(utilisateur);
+            List<DemandeEchange> echangesTermines = demandeEchangeService.trouverEchangesTermines(utilisateur);
 
             model.addAttribute("demandesEnvoyees", demandesEnvoyees);
             model.addAttribute("demandesRecues", demandesRecues);
             model.addAttribute("demandesEnAttente", demandesEnAttente);
             model.addAttribute("echangesActifs", echangesActifs);
-            model.addAttribute("utilisateur", utilisateur); // AJOUTÉ pour la messagerie
+            model.addAttribute("echangesTermines", echangesTermines);
+            model.addAttribute("utilisateur", utilisateur);
 
             return "echanges/mes-demandes";
         } catch (SecurityException e) {
@@ -187,14 +192,12 @@ public class DemandeEchangeController {
             Pageable pageable = preparerPageable(page, sort);
             Page<DemandeEchange> demandesPage = getDemandesPageRecues(utilisateur, statut, pageable);
 
-            // CORRECTION: Ajouter les statistiques complètes
             model.addAttribute("demandesPage", demandesPage);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", demandesPage.getTotalPages());
             model.addAttribute("sort", sort);
             model.addAttribute("statut", statut);
 
-            // Statistiques complètes (pas seulement la page actuelle)
             model.addAttribute("totalDemandes", demandesPage.getTotalElements());
             model.addAttribute("demandesEnAttente",
                     demandeEchangeService.compterDemandesRecuesParStatut(utilisateur, DemandeEchange.StatutDemande.EN_ATTENTE));
@@ -221,14 +224,12 @@ public class DemandeEchangeController {
             Pageable pageable = preparerPageable(page, sort);
             Page<DemandeEchange> demandesPage = getDemandesPageEnvoyees(utilisateur, statut, pageable);
 
-            // CORRECTION: Ajouter les statistiques complètes
             model.addAttribute("demandesPage", demandesPage);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", demandesPage.getTotalPages());
             model.addAttribute("sort", sort);
             model.addAttribute("statut", statut);
 
-            // Statistiques complètes
             model.addAttribute("totalDemandes", demandesPage.getTotalElements());
             model.addAttribute("demandesEnAttente",
                     demandeEchangeService.compterDemandesEnvoyeesParStatut(utilisateur, DemandeEchange.StatutDemande.EN_ATTENTE));
@@ -240,6 +241,27 @@ public class DemandeEchangeController {
                     demandeEchangeService.compterDemandesEnvoyeesParStatut(utilisateur, DemandeEchange.StatutDemande.ANNULEE));
 
             return "echanges/demandes-envoyees";
+        } catch (SecurityException e) {
+            return "redirect:/connexion";
+        }
+    }
+
+    @GetMapping("/historique")
+    public String afficherHistorique(@RequestParam(defaultValue = "0") int page,
+                                     Model model,
+                                     HttpSession session) {
+        try {
+            Utilisateur utilisateur = getUtilisateurAuthentifie();
+
+            Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "dateCreation"));
+            Page<DemandeEchange> echangesTerminesPage = demandeEchangeService.trouverEchangesTerminesPage(utilisateur, pageable);
+
+            model.addAttribute("echangesPage", echangesTerminesPage);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", echangesTerminesPage.getTotalPages());
+            model.addAttribute("utilisateur", utilisateur);
+
+            return "echanges/historique";
         } catch (SecurityException e) {
             return "redirect:/connexion";
         }
@@ -331,30 +353,38 @@ public class DemandeEchangeController {
     @GetMapping("/messagerie/{id}")
     public String afficherMessagerie(@PathVariable Long id,
                                      Model model,
-                                     HttpSession session) {
+                                     HttpSession session,
+                                     RedirectAttributes redirectAttributes) {
         try {
             Utilisateur utilisateur = getUtilisateurAuthentifie();
 
+            // Utiliser trouverParIdAvecMessages
             DemandeEchange demande = demandeEchangeService.trouverParIdAvecMessages(id)
                     .orElseThrow(() -> new IllegalArgumentException("Échange non trouvé"));
 
-            // Vérifier que l'utilisateur a le droit d'accéder à cette messagerie
-            if (!demande.getDemandeur().equals(utilisateur) &&
-                    !demande.getDestinataire().equals(utilisateur)) {
+            // Vérifier que l'utilisateur peut consulter cet historique
+            if (!demandeEchangeService.peutConsulterHistorique(id, utilisateur)) {
+                redirectAttributes.addFlashAttribute("error", "Accès non autorisé");
                 return "redirect:/echanges/mes-demandes";
             }
 
-            // Initialiser le MessageDto avec l'ID
+            // Déterminer si la messagerie est en lecture seule
+            boolean lectureSeule = demande.getStatut() == DemandeEchange.StatutDemande.TERMINEE;
+
             MessageDto messageDto = new MessageDto();
             messageDto.setDemandeEchangeId(id);
 
             model.addAttribute("demande", demande);
             model.addAttribute("utilisateur", utilisateur);
             model.addAttribute("messageDto", messageDto);
+            model.addAttribute("lectureSeule", lectureSeule);
 
             return "echanges/messagerie";
         } catch (SecurityException e) {
             return "redirect:/connexion";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors du chargement de la messagerie: " + e.getMessage());
+            return "redirect:/echanges/mes-demandes";
         }
     }
 
@@ -383,7 +413,7 @@ public class DemandeEchangeController {
         return "redirect:/echanges/messagerie/" + messageDto.getDemandeEchangeId();
     }
 
-    // ============ WEBSOCKET (Optionnel) ============
+    // ============ WEBSOCKET (Ceci est optionnel) ============
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload MessageDto messageDto) {
