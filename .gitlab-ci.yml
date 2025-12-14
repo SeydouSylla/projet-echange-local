@@ -4,7 +4,6 @@ stages:
   - deploy
 
 variables:
-  # Variables globales
   MAVEN_CLI_OPTS: "-B -V"
   POSTGRES_DB: echange_local
   POSTGRES_USER: postgres
@@ -26,7 +25,7 @@ before_script:
 # Étape 1 : Compilation
 build:
   stage: build
-  image: maven:3.9.0-openjdk-21
+  image: maven:3.9.11-eclipse-temurin-21
   script:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
@@ -36,7 +35,7 @@ build:
 # Étape 2 : Tests
 test:
   stage: test
-  image: maven:3.9.0-openjdk-21
+  image: maven:3.9.11-eclipse-temurin-21
   services:
     - postgres:15
   script:
@@ -46,7 +45,7 @@ test:
     reports:
       junit: target/surefire-reports/*.xml
 
-# Étape 3 : Déploiement (exemple sur Heroku)
+# Étape 3 : Déploiement sur Heroku
 deploy:
   stage: deploy
   image: ruby:3.2
