@@ -1,0 +1,61 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  # Variables globales
+  MAVEN_CLI_OPTS: "-B -V"
+  POSTGRES_DB: echange_local
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: 1234567
+  SPRING_PROFILES_ACTIVE: test
+
+services:
+  - name: postgres:15
+    alias: db
+    command: ["postgres", "-c", "max_connections=200"]
+
+cache:
+  paths:
+    - .m2/repository
+
+before_script:
+  - export GRADLE_USER_HOME=$(pwd)/.gradle
+
+# Étape 1 : Compilation
+build:
+  stage: build
+  image: maven:3.9.0-openjdk-21
+  script:
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+
+# Étape 2 : Tests
+test:
+  stage: test
+  image: maven:3.9.0-openjdk-21
+  services:
+    - postgres:15
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+  artifacts:
+    when: always
+    reports:
+      junit: target/surefire-reports/*.xml
+
+# Étape 3 : Déploiement (exemple sur Heroku)
+deploy:
+  stage: deploy
+  image: ruby:3.2
+  script:
+    - apt-get update -y
+    - apt-get install curl gnupg -y
+    - curl https://cli-assets.heroku.com/install.sh | sh
+    - echo $HEROKU_API_KEY | heroku auth:token
+    - heroku git:remote -a $HEROKU_APP_NAME
+    - git push heroku main
+  only:
+    - main
