@@ -36,8 +36,10 @@ class AnnonceServiceTest {
     @BeforeEach
     void setUp() {
         annonceRepository = mock(AnnonceRepository.class);
-        applicationProperties = new ApplicationProperties();
-        annonceService = new AnnonceServiceImpl(annonceRepository, applicationProperties);
+        // ANCIEN : applicationProperties = new ApplicationProperties();
+        // NOUVEAU :
+        String testUploadDir = "uploads";
+        annonceService = new AnnonceServiceImpl(annonceRepository, testUploadDir);
 
         // Création d'un utilisateur de test
         utilisateur = new Utilisateur();

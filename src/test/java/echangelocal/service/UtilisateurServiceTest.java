@@ -26,8 +26,10 @@ class UtilisateurServiceTest {
     void setUp() {
         utilisateurRepository = mock(UtilisateurRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        applicationProperties = new ApplicationProperties();
-        utilisateurService = new UtilisateurServiceImpl(utilisateurRepository, passwordEncoder, applicationProperties);
+        // ANCIEN : applicationProperties = new ApplicationProperties();
+        // NOUVEAU :
+        String testUploadDir = "uploads";
+        utilisateurService = new UtilisateurServiceImpl(utilisateurRepository, passwordEncoder, testUploadDir);
     }
 
     @Test

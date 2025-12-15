@@ -1,6 +1,5 @@
 package echangelocal.service.impl;
 
-import echangelocal.config.ApplicationProperties;
 import echangelocal.dto.AnnonceDto;
 import echangelocal.dto.AnnonceDetailDto;
 import echangelocal.exception.AnnonceNonTrouveeException;
@@ -11,6 +10,7 @@ import echangelocal.repository.AnnonceRepository;
 import echangelocal.service.interfaces.AnnonceService;
 import echangelocal.util.FileStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,13 +37,13 @@ public class AnnonceServiceImpl implements AnnonceService {
             "Jeux vidéo", "Bricolage", "Décoration", "Autre"
     );
     private final AnnonceRepository annonceRepository;
-    private final ApplicationProperties applicationProperties;
+    private final String uploadDir; // Chemin d'upload injecté
 
     @Autowired
     public AnnonceServiceImpl(AnnonceRepository annonceRepository,
-                              ApplicationProperties applicationProperties) {
+                              @Value("${app.upload.dir}") String uploadDir) {
         this.annonceRepository = annonceRepository;
-        this.applicationProperties = applicationProperties;
+        this.uploadDir = uploadDir; // Enregistrement du chemin d'upload
     }
 
     @Override
@@ -160,7 +160,8 @@ public class AnnonceServiceImpl implements AnnonceService {
 
         if (annonce.getImages().remove(nomImage)) {
             // Supprimer le fichier physique
-            FileStorageUtil.supprimerFichier(nomImage, getRepertoireUploadAnnonces());
+            Path cheminComplet = Paths.get(getRepertoireUploadAnnonces(), nomImage);
+            FileStorageUtil.supprimerFichier(cheminComplet);
             annonceRepository.save(annonce);
         }
     }
@@ -222,8 +223,8 @@ public class AnnonceServiceImpl implements AnnonceService {
 
         for (String nomImage : annonce.getImages()) {
             try {
-
-                FileStorageUtil.supprimerFichier(nomImage, repertoireUpload);
+                Path cheminComplet = Paths.get(repertoireUpload, nomImage);
+                FileStorageUtil.supprimerFichier(cheminComplet);
             } catch (IOException e) {
                 // Logger l'erreur mais continuer la suppression
                 System.err.println("Erreur lors de la suppression de l'image: " + nomImage);
@@ -255,6 +256,7 @@ public class AnnonceServiceImpl implements AnnonceService {
     }
 
     private String getRepertoireUploadAnnonces() {
-        return "uploads/annonces/";
+        // Créer le chemin complet pour les annonces dans le répertoire d'upload
+        return Paths.get(uploadDir, "annonces").toString();
     }
 }
