@@ -97,4 +97,5 @@ public class GlobalExceptionHandler {
                 "Une erreur inattendue s'est produite : " + e.getMessage());
         return "redirect:/accueil";
     }
+    
 }

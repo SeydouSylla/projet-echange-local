@@ -1,6 +1,5 @@
 package echangelocal.service.impl;
 
-import echangelocal.config.ApplicationProperties;
 import echangelocal.dto.InscriptionDto;
 import echangelocal.dto.ProfilDto;
 import echangelocal.exception.TelephoneInvalideException;
@@ -12,11 +11,14 @@ import echangelocal.service.interfaces.UtilisateurService;
 import echangelocal.util.FileStorageUtil;
 import echangelocal.util.TelephoneUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,7 +28,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ApplicationProperties applicationProperties;
+    private final String uploadDir; // Chemin d'upload injecté
 
     // Stockage temporaire des codes de vérification du téléphone
     private final ConcurrentHashMap<Long, String> codesVerification = new ConcurrentHashMap<>();
@@ -35,10 +37,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Autowired
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
                                   PasswordEncoder passwordEncoder,
-                                  ApplicationProperties applicationProperties) {
+                                  @Value("${app.upload.dir}") String uploadDir) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
-        this.applicationProperties = applicationProperties;
+        this.uploadDir = uploadDir; // Enregistrement du chemin d'upload
     }
 
     // Inscrit un nouvel utilisateur après vérification de l'unicité de l'email
@@ -121,13 +123,17 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new IllegalArgumentException("Le fichier doit être une image");
         }
 
+        // Créer le sous-dossier profils dans le répertoire d'upload
+        Path profilUploadDir = Paths.get(uploadDir, "profils");
+
         // Supprime l'ancienne photo si elle existe
         if (utilisateur.getPhotoProfil() != null) {
-            FileStorageUtil.supprimerFichier(utilisateur.getPhotoProfil(), applicationProperties.getUploadDir());
+            Path ancienChemin = profilUploadDir.resolve(utilisateur.getPhotoProfil());
+            FileStorageUtil.supprimerFichier(ancienChemin);
         }
 
         // Sauvegarde la nouvelle photo sur le disque
-        String nomFichier = FileStorageUtil.sauvegarderFichier(fichier, applicationProperties.getUploadDir());
+        String nomFichier = FileStorageUtil.sauvegarderFichier(fichier, profilUploadDir.toString());
         utilisateur.setPhotoProfil(nomFichier);
 
         return utilisateurRepository.save(utilisateur);

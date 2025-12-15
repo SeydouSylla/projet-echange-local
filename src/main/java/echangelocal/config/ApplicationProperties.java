@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app")
 public class ApplicationProperties {
 
-    private String uploadDir = "uploads/profils/";
+    // MODIFIÉ : Utiliser la valeur par défaut de application.properties
+    private String uploadDir = "uploads";
     private int passwordMinLength = 6;
 
     public String getUploadDir() {
